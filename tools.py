@@ -30,3 +30,11 @@ def butter_lowpass_filter(data, cutOff, fs, order=4):
 def get_info(filename):
     filename, extension = os.path.split(filename)
     return filename
+
+
+def get_folder_files(folderpath):
+    folderfiles = []
+    for root, dirs, files in os.walk(folderpath):
+        for file in files:
+            folderfiles.append(os.path.join(root, file))
+    return folderfiles
