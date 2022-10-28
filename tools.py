@@ -29,3 +29,4 @@ def butter_lowpass_filter(data, cutOff, fs, order=4):
 
 def get_info(filename):
     filename, extension = os.path.split(filename)
+    return filename
