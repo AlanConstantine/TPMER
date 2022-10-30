@@ -5,6 +5,8 @@ data/
 *.mp3
 *.csv
 
+info.txt
+
 HKU956/
 
 # Byte-compiled / optimized / DLL files
