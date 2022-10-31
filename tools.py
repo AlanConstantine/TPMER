@@ -1,8 +1,10 @@
+from scipy import special
 from scipy.signal import freqs
 from scipy.signal import butter, lfilter
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+import pandas as pd
 
 
 def resample_by_poly(signal, input_fs, output_fs):
@@ -28,6 +30,20 @@ def plot_sig(sig):
     fig = plt.figure(figsize=(25, 5))
     plt.plot(sig)
     plt.show()
+
+
+def chauvenet_filter(signal):
+    mean, std, N = signal.mean(), signal.std(), len(signal)
+    criterion = 1.0 / (2 * N)
+    d = abs(signal - mean) / std
+    prob = special.erfc(d)
+
+    mask = prob < criterion
+
+    signal = pd.Series(np.ma.masked_array(data=signal, mask=mask,
+                                          fill_value=np.nan).filled())
+
+    return signal.interpolate()
 
 
 def iqr_filter(signal):

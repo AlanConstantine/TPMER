@@ -4,6 +4,7 @@ data/
 *.zip
 *.mp3
 *.csv
+*.json
 
 info.txt
 
