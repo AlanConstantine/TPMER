@@ -8,6 +8,21 @@ import pandas as pd
 import pickle
 
 
+def join_signals(df, target='valence'):
+    bvp_cols = [fea for fea in df.columns.values if fea.split('_')[0] in ['BVP']]
+    eda_cols = [fea for fea in df.columns.values if fea.split('_')[0] in ['EDA']]
+    temp_cols = [fea for fea in df.columns.values if fea.split('_')[0] in ['TEMP']]
+    hr_cols = [fea for fea in df.columns.values if fea.split('_')[0] in ['HR']]
+
+    target_cols = ['valence', 'arousal', 'arousal_rating', 'valence_rating']
+    group_cols = ['participant_id', 'song_id']
+
+    signal_concats = []
+    for bvp, eda, temp, hr in zip(df[bvp_cols].values, df[eda_cols].values, df[temp_cols].values, df[hr_cols].values):
+        signal_concats.append([bvp, eda, temp, hr])
+
+    return np.array(signal_concats), df[target].values
+
 def resample_by_poly(signal, input_fs, output_fs):
     return signal.resample_poly(signal, input_fs, output_fs)
 
