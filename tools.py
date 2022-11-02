@@ -181,11 +181,11 @@ class DataPrepare(object):
         xtrain, ytrain, xtest, ytest = X[train_index], y[train_index], X[test_index], y[test_index]
         print(xtrain.shape, ytrain.shape, xtest.shape, ytest.shape)
 
-        self.xtrain = torch.from_numpy(xtrain).to(device)
-        self.xtest = torch.from_numpy(xtest).to(device)
+        self.xtrain = torch.from_numpy(xtrain).to(device).to (torch.float32)
+        self.xtest = torch.from_numpy(xtest).to(device).to (torch.float32)
 
-        self.ytrain = torch.from_numpy(ytrain).to(device)
-        self.ytest = torch.from_numpy(ytest).to(device)
+        self.ytrain = torch.from_numpy(ytrain).to(device).to (torch.float32)
+        self.ytest = torch.from_numpy(ytest).to(device).to (torch.float32)
 
         print(self.xtrain.isnan().any(), self.xtest.isnan().any(),
               self.ytrain.isnan().any(), self.ytest.isnan().any(),)
