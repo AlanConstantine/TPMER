@@ -6,12 +6,18 @@ import matplotlib.pyplot as plt
 import os
 import pandas as pd
 import pickle
+import torch
+from torch.utils.data import (
+    TensorDataset, DataLoader, SequentialSampler, WeightedRandomSampler)
 
 
 def join_signals(df, target='valence'):
-    bvp_cols = [fea for fea in df.columns.values if fea.split('_')[0] in ['BVP']]
-    eda_cols = [fea for fea in df.columns.values if fea.split('_')[0] in ['EDA']]
-    temp_cols = [fea for fea in df.columns.values if fea.split('_')[0] in ['TEMP']]
+    bvp_cols = [fea for fea in df.columns.values if fea.split('_')[0] in [
+        'BVP']]
+    eda_cols = [fea for fea in df.columns.values if fea.split('_')[0] in [
+        'EDA']]
+    temp_cols = [fea for fea in df.columns.values if fea.split('_')[0] in [
+        'TEMP']]
     hr_cols = [fea for fea in df.columns.values if fea.split('_')[0] in ['HR']]
 
     target_cols = ['valence', 'arousal', 'arousal_rating', 'valence_rating']
@@ -22,6 +28,7 @@ def join_signals(df, target='valence'):
         signal_concats.append([bvp, eda, temp, hr])
 
     return np.array(signal_concats), df[target].values
+
 
 def resample_by_poly(signal, input_fs, output_fs):
     return signal.resample_poly(signal, input_fs, output_fs)
@@ -165,3 +172,36 @@ def load_model(filename):
     with open(filename, 'rb') as f:
         model = pickle.load(f)
     return model
+
+
+class DataPrepare(object):
+    def __init__(self, target, data, train_index, test_index, device, batch_size=64):
+
+        X, y = join_signals(data, target=target)
+        xtrain, ytrain, xtest, ytest = X[train_index], y[train_index], X[test_index], y[test_index]
+        print(xtrain.shape, ytrain.shape, xtest.shape, ytest.shape)
+
+        self.xtrain = torch.from_numpy(xtrain).to(device)
+        self.xtest = torch.from_numpy(xtest).to(device)
+
+        self.ytrain = torch.from_numpy(ytrain).to(device)
+        self.ytest = torch.from_numpy(ytest).to(device)
+
+        print(self.xtrain.isnan().any(), self.xtest.isnan().any(),
+              self.ytrain.isnan().any(), self.ytest.isnan().any(),)
+
+        self.batch_size = batch_size
+
+    def get_data(self):
+        train_data = TensorDataset(self.xtrain, self.ytrain)
+        test_data = TensorDataset(self.xtest, self.ytest)
+
+        train_sampler = SequentialSampler(train_data)
+        train_dataloader = DataLoader(
+            train_data, sampler=train_sampler, batch_size=self.batch_size, drop_last=True)
+
+        test_sampler = SequentialSampler(test_data)
+        test_dataloader = DataLoader(
+            test_data, sampler=test_sampler, batch_size=self.batch_size, drop_last=True)
+
+        return train_dataloader, test_dataloader
