@@ -53,7 +53,12 @@ class StepRunner:
     def step(self, features, labels):
         # loss
         preds = self.net(features)
-        loss = self.loss_fn(preds, labels)
+        loss = None
+        if self.args.target in ['valence', 'arousal']:
+            loss = self.loss_fn(preds, labels)
+        else:
+            loss = self.loss_fn(torch.argmax(
+                preds, dim=1).reshape(-1, 1).to(torch.float32), labels.to(torch.float32))
 
         # backward()
         if self.optimizer is not None and self.stage == "train":

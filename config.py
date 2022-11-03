@@ -9,7 +9,7 @@ class Params(object):
                  lr=0.01,
                  epochs=100,
                  valid='loso',
-                 target='valence',
+                 target='valence_label',
                  batch_size=8,
                  out_channels=64,
                  hidden_size=256,
