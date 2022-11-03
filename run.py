@@ -135,8 +135,6 @@ class EpochRunner:
                     {self.stage+"_loss": epoch_loss}, **epoch_metrics)
                 loop.set_postfix(**epoch_log)
 
-                # for name, metric_fn in self.steprunner.metrics_dict.items():
-                #     metric_fn.reset()
         return epoch_log
 
 
@@ -149,8 +147,6 @@ def train_model(args, net, optimizer, loss_fn, metrics_dict,
 
     if args.init:
         net.apply(init_xavier)
-
-    init_weig = 0
 
     for epoch in range(1, epochs+1):
         printlog("Epoch {0} / {1}".format(epoch, epochs))
@@ -177,13 +173,12 @@ def train_model(args, net, optimizer, loss_fn, metrics_dict,
             for name, metric in val_metrics.items():
                 history[name] = history.get(name, []) + [metric]
 
-        last_name, last_parms = net.named_parameters()[-1]
-        print(init_weig == torch.mean(last_parms.data))
-        init_weig = torch.mean(last_parms.data)
-        # for name, parms in net.named_parameters():
-        #     print('-->name:', name)
-        #     print('-->grad_requirs:', parms.requires_grad)
-        #     print('--weight', torch.mean(parms.data))
+        for name, parms in net.named_parameters():
+            # print('-->name:', name)
+            # print('-->grad_requirs:', parms.requires_grad)
+            # print('--weight', torch.mean(parms.data))
+            # print('-->grad_value:', torch.mean(parms.grad))
+            print(name, parms.grad is None, parms.is_leaf)
 
         # 3，early-stopping -------------------------------------------------
         arr_scores = history[monitor]

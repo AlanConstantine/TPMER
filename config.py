@@ -15,7 +15,7 @@ class Params(object):
                  batch_size=16,
                  out_channels=64,
                  hidden_size=256,
-                 num_layers=6,
+                 num_layers=2,
                  fcn_input=201728,
                  save_path='./output',
                  init=True

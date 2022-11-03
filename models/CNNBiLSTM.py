@@ -38,11 +38,15 @@ class CNNBiLSTM(nn.Module):
             nn.ReLU(inplace=True),
         )
 
-        self.classifier = nn.Linear(512, 2)
-
-        self.regresser = nn.Linear(512, 1)
-
         self.relu = nn.ReLU(inplace=True)
+
+        self.output = nn.Linear(512, 2)
+        if self.args.target in ['valence', 'arousal']:
+            self.output = nn.Linear(512, 1)
+
+        # self.classifier = nn.Linear(512, 2)
+
+        # self.regresser = nn.Linear(512, 1)
 
     def forward(self, x):
         """
@@ -57,8 +61,8 @@ class CNNBiLSTM(nn.Module):
         x = x.flatten(start_dim=1)
         x = self.fcn(x)
         if self.args.target in ['valence', 'arousal']:
-            output = self.regresser(x)
+            output = self.output(x)
             return output
         else:
-            output = torch.sigmoid(self.classifier(x))
+            output = torch.sigmoid(self.output(x))
             return output
