@@ -187,11 +187,15 @@ class DataPrepare(object):
                                                   100], ytrain[:100], xtest[:100], ytest[:100]
         print(xtrain.shape, ytrain.shape, xtest.shape, ytest.shape)
 
-        self.xtrain = torch.from_numpy(xtrain).to(device).to(torch.float32)
-        self.xtest = torch.from_numpy(xtest).to(device).to(torch.float32)
+        xtrain = torch.from_numpy(xtrain).to(torch.float32)
+        xtest = torch.from_numpy(xtest).to(torch.float32)
 
-        self.ytrain = torch.from_numpy(ytrain).to(device)
-        self.ytest = torch.from_numpy(ytest).to(device)
+        self.xtrain, self.xtest = xtrain.to(device), xtest.to(device)
+
+        ytrain = torch.from_numpy(ytrain)
+        ytest = torch.from_numpy(ytest)
+
+        self.ytrain, self.ytest = ytrain.to(device), ytest.to(device)
 
         if args.target in ['valence', 'arousal']:
             self.ytrain = self.ytrain.to(torch.float32)

@@ -5,7 +5,7 @@ import torch
 
 
 class Params(object):
-    def __init__(self, model='CNNLSTM',
+    def __init__(self, model='CLSTM',
                  use_cuda=True,
                  debug=True,
                  lr=0.01,

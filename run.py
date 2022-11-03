@@ -29,7 +29,7 @@ import sys
 import time
 import warnings
 from copy import deepcopy
-warnings.filterwarnings('ignore')
+# warnings.filterwarnings('ignore')
 
 
 torch.manual_seed(31)
@@ -61,7 +61,6 @@ class StepRunner:
         preds = self.net(features)
 
         if self.optimizer is not None and self.stage == "train":
-            # print(self.stage)
             self.optimizer.zero_grad()
 
         loss = None
@@ -178,9 +177,10 @@ def train_model(args, net, optimizer, loss_fn, metrics_dict,
             # print('-->grad_requirs:', parms.requires_grad)
             # print('--weight', torch.mean(parms.data))
             # print('-->grad_value:', torch.mean(parms.grad))
-            print(name, parms.grad is None, parms.is_leaf)
+            if name == 'cnns.0.weight':
+                print(name, torch.mean(parms.data))
 
-        # 3，early-stopping -------------------------------------------------
+            # 3，early-stopping -------------------------------------------------
         arr_scores = history[monitor]
         best_score_idx = np.argmax(
             arr_scores) if mode == "max" else np.argmin(arr_scores)
@@ -199,11 +199,11 @@ def train_model(args, net, optimizer, loss_fn, metrics_dict,
 
 def run(train_dataloader, test_dataloader, args):
     model = None
-    if args.model == 'CNNLSTM':
-        model = CNNBiLSTM.CNNBiLSTM(args)
+    if args.model == 'CLSTM':
+        model_ = CNNBiLSTM.CNNBiLSTM(args)
     else:
         pass
-    model = model.to(args.device)
+    model = model_.to(args.device)
     loss_fn = nn.BCEWithLogitsLoss()
     mode = 'max'
     if args.target in ['valence', 'arousal']:
