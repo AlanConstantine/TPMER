@@ -27,7 +27,7 @@ def join_signals(df, target='valence'):
     for bvp, eda, temp, hr in zip(df[bvp_cols].values, df[eda_cols].values, df[temp_cols].values, df[hr_cols].values):
         signal_concats.append([bvp, eda, temp, hr])
 
-    return np.array(signal_concats), df[target].values
+    return np.array(signal_concats), df[[target]].values
 
 
 def resample_by_poly(signal, input_fs, output_fs):
@@ -175,17 +175,23 @@ def load_model(filename):
 
 
 class DataPrepare(object):
-    def __init__(self, target, data, train_index, test_index, device, batch_size=64):
+    def __init__(self, args, target, data, train_index, test_index, device, batch_size=64):
+
+        self.args = args
 
         X, y = join_signals(data, target=target)
         xtrain, ytrain, xtest, ytest = X[train_index], y[train_index], X[test_index], y[test_index]
+
+        if self.args.debug:
+            xtrain, ytrain, xtest, ytest = xtrain[:
+                                                  100], ytrain[:100], xtest[:100], ytest[:100]
         print(xtrain.shape, ytrain.shape, xtest.shape, ytest.shape)
 
-        self.xtrain = torch.from_numpy(xtrain).to(device).to (torch.float32)
-        self.xtest = torch.from_numpy(xtest).to(device).to (torch.float32)
+        self.xtrain = torch.from_numpy(xtrain).to(device).to(torch.float32)
+        self.xtest = torch.from_numpy(xtest).to(device).to(torch.float32)
 
-        self.ytrain = torch.from_numpy(ytrain).to(device).to (torch.float32)
-        self.ytest = torch.from_numpy(ytest).to(device).to (torch.float32)
+        self.ytrain = torch.from_numpy(ytrain).to(device).to(torch.float32)
+        self.ytest = torch.from_numpy(ytest).to(device).to(torch.float32)
 
         print(self.xtrain.isnan().any(), self.xtest.isnan().any(),
               self.ytrain.isnan().any(), self.ytest.isnan().any(),)

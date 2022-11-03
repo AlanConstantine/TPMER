@@ -17,27 +17,30 @@ class CNNBiLSTM(nn.Module):
             nn.ReLU(inplace=True),
         )
 
-        self.lstm1 = nn.LSTM(input_size=args.out_channels, 
-                    hidden_size=512,
-                    num_layers=args.num_layers, batch_first=True,
-                    bidirectional=True
-                    )
+        self.lstm1 = nn.LSTM(input_size=args.out_channels,
+                             hidden_size=512,
+                             num_layers=args.num_layers, batch_first=True,
+                             bidirectional=True
+                             )
 
-        self.lstm2 = nn.LSTM(input_size=512 * 2, 
-                    hidden_size=args.hidden_size,
-                    num_layers=args.num_layers, batch_first=True,
-                    bidirectional=True
-                    )
+        self.lstm2 = nn.LSTM(input_size=512 * 2,
+                             hidden_size=args.hidden_size,
+                             num_layers=args.num_layers, batch_first=True,
+                             bidirectional=True
+                             )
 
-        self.classifier = nn.Sequential(
+        self.fcn = nn.Sequential(
             nn.Dropout(p=0.5),
-            nn.Linear(args.hidden_size, 1024),
+            nn.Linear(args.fcn_input, 1024),
             nn.ReLU(inplace=True),
             nn.Dropout(p=0.5),
             nn.Linear(1024, 512),
             nn.ReLU(inplace=True),
-            nn.Linear(512, 2)
         )
+
+        self.classifier = nn.Linear(512, 2)
+
+        self.regresser = nn.Linear(512, 1)
 
         self.relu = nn.ReLU(inplace=True)
 
@@ -45,11 +48,18 @@ class CNNBiLSTM(nn.Module):
         """
         input [batch_size, channels, seq_len]
         """
-        x = self.cnns(x) # output [batch_size, channels, seq_len]
+        x = self.cnns(x)  # output [batch_size, channels, seq_len]
         x = x.permute(0, 2, 1)
-        x, _ = lstms1(x) # output [batch_size, seq_len, Hin]
+        x, _ = self.lstm1(x)  # output [batch_size, seq_len, Hin]
         x = self.relu(x)
-        x, _ = lstms2(x) # output [batch_size, seq_len, Hin]
+        x, _ = self.lstm2(x)  # output [batch_size, seq_len, Hin]
         x = self.relu(x)
-        output = classifier(x)
-        return output
+        x = x.flatten(start_dim=1)
+        print(x.shape)
+        x = self.fcn(x)
+        if self.args.target in ['valence', 'arousal']:
+            output = self.regresser(x)
+            return output
+        else:
+            output = torch.sigmoid(self.classifier(x))
+            return output

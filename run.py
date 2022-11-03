@@ -42,12 +42,13 @@ def printlog(info):
 
 
 class StepRunner:
-    def __init__(self, net, loss_fn,
+    def __init__(self, net, loss_fn, args,
                  stage="train", metrics_dict=None,
                  optimizer=None
                  ):
         self.net, self.loss_fn, self.metrics_dict, self.stage = net, loss_fn, metrics_dict, stage
         self.optimizer = optimizer
+        self.args = args
 
     def step(self, features, labels):
         # loss
@@ -61,8 +62,20 @@ class StepRunner:
             self.optimizer.zero_grad()
 
         # metrics
-        step_metrics = {self.stage+"_"+name: metric_fn(preds, labels).item()
-                        for name, metric_fn in self.metrics_dict.items()}
+        step_metrics = {}
+        for name, metric_fn in self.metrics_dict.items():
+            if self.args.target in ['valence', 'arousal']:
+                step_metrics[self.stage+"_" +
+                             name]: metric_fn(preds, labels).item()
+            else:
+                if name == 'f1':
+                    preds = torch.argmax(preds, dim=1)
+                elif name == 'auc':
+                    preds = preds[:, 1]
+                step_metrics[self.stage+"_" +
+                             name]: metric_fn(preds, labels).item()
+        # step_metrics = {self.stage+"_"+name: metric_fn(preds, labels).item()
+        #                 for name, metric_fn in self.metrics_dict.items()}
         return loss.item(), step_metrics
 
     def train_step(self, features, labels):
@@ -110,7 +123,7 @@ class EpochRunner:
         return epoch_log
 
 
-def train_model(net, optimizer, loss_fn, metrics_dict,
+def train_model(args, net, optimizer, loss_fn, metrics_dict,
                 train_data, val_data=None,
                 epochs=10, ckpt_path='checkpoint.pt',
                 patience=5, monitor="val_loss", mode="min"):
@@ -122,7 +135,7 @@ def train_model(net, optimizer, loss_fn, metrics_dict,
 
         # 1，train -------------------------------------------------
         train_step_runner = StepRunner(net=net, stage="train",
-                                       loss_fn=loss_fn, metrics_dict=deepcopy(
+                                       loss_fn=loss_fn, args=args, metrics_dict=deepcopy(
                                            metrics_dict),
                                        optimizer=optimizer)
         train_epoch_runner = EpochRunner(train_step_runner)
@@ -162,10 +175,10 @@ def train_model(net, optimizer, loss_fn, metrics_dict,
 def run(train_dataloader, test_dataloader, args):
     model = None
     if args.model == 'CNNLSTM':
-        model = CNNBiLSTM.CNNBiLSTM()
+        model = CNNBiLSTM.CNNBiLSTM(args)
     else:
         pass
-    loss_fn = nn.BCEWithLogitsLoss()
+    loss_fn = nn.BCEWithLogitsLoss(args)
     mode = 'max'
     if args.target in ['valence', 'arousal']:
         loss_fn = nn.MSELoss()
@@ -173,7 +186,7 @@ def run(train_dataloader, test_dataloader, args):
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
     metrics_dict = args.metrics_dict
 
-    history = train_model(model,
+    history = train_model(args, model,
                           optimizer,
                           loss_fn,
                           metrics_dict,
@@ -199,8 +212,8 @@ def main():
         print('[Fold {}]'.format(k), '='*31)
         train_index = k['train_index']
         test_index = k['test_index']
-        dataprepare = DataPrepare(
-            target='valence', data=data, train_index=train_index, test_index=test_index, device=device)
+        dataprepare = DataPrepare(args,
+                                  target='valence', data=data, train_index=train_index, test_index=test_index, device=device)
         train_dataloader, test_dataloader = dataprepare.get_data()
         run(train_dataloader, test_dataloader, args)
         if args.debug:
