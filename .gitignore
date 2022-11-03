@@ -9,6 +9,7 @@ data/
 info.txt
 
 HKU956/
+output/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

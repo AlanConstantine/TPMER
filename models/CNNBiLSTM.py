@@ -55,7 +55,6 @@ class CNNBiLSTM(nn.Module):
         x, _ = self.lstm2(x)  # output [batch_size, seq_len, Hin]
         x = self.relu(x)
         x = x.flatten(start_dim=1)
-        print(x.shape)
         x = self.fcn(x)
         if self.args.target in ['valence', 'arousal']:
             output = self.regresser(x)

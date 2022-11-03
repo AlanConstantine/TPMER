@@ -41,6 +41,11 @@ def printlog(info):
     print(str(info)+"\n")
 
 
+def init_xavier(m):
+    if type(m) == nn.Linear or type(m) == nn.Conv1d:
+        nn.init.xavier_normal_(m.weight)
+
+
 class StepRunner:
     def __init__(self, net, loss_fn, args,
                  stage="train", metrics_dict=None,
@@ -49,47 +54,53 @@ class StepRunner:
         self.net, self.loss_fn, self.metrics_dict, self.stage = net, loss_fn, metrics_dict, stage
         self.optimizer = optimizer
         self.args = args
+        self.results = None
 
     def step(self, features, labels):
         # loss
         preds = self.net(features)
+
+        if self.optimizer is not None and self.stage == "train":
+            # print(self.stage)
+            self.optimizer.zero_grad()
+
         loss = None
         if self.args.target in ['valence', 'arousal']:
             loss = self.loss_fn(preds, labels)
         else:
             loss = self.loss_fn(torch.argmax(
                 preds, dim=1).reshape(-1, 1).to(torch.float32), labels.to(torch.float32))
+        loss.requires_grad_(True)
 
-        # backward()
-        if self.optimizer is not None and self.stage == "train":
+        if self.stage == "train":
             loss.backward()
             self.optimizer.step()
-            self.optimizer.zero_grad()
 
         # metrics
         step_metrics = {}
         for name, metric_fn in self.metrics_dict.items():
             if self.args.target in ['valence', 'arousal']:
                 step_metrics[self.stage+"_" +
-                             name]: metric_fn(preds, labels).item()
+                             name] = metric_fn(preds, labels).item()
             else:
                 if name == 'f1':
-                    preds = torch.argmax(preds, dim=1)
+                    step_metrics[self.stage+"_" +
+                                 name] = metric_fn(torch.argmax(preds, dim=1), labels).item()
                 elif name == 'auc':
-                    preds = preds[:, 1]
-                step_metrics[self.stage+"_" +
-                             name]: metric_fn(preds, labels).item()
-        # step_metrics = {self.stage+"_"+name: metric_fn(preds, labels).item()
-        #                 for name, metric_fn in self.metrics_dict.items()}
+                    step_metrics[self.stage+"_" +
+                                 name] = metric_fn(preds[:, 1], labels).item()
+                else:
+                    pass
+        self.results = step_metrics
         return loss.item(), step_metrics
 
     def train_step(self, features, labels):
-        self.net.train()  # 训练模式, dropout层发生作用
+        self.net.train()
         return self.step(features, labels)
 
     @torch.no_grad()
     def eval_step(self, features, labels):
-        self.net.eval()  # 预测模式, dropout层不发生作用
+        self.net.eval()
         return self.step(features, labels)
 
     def __call__(self, features, labels):
@@ -117,14 +128,15 @@ class EpochRunner:
                 loop.set_postfix(**step_log)
             else:
                 epoch_loss = total_loss/step
-                epoch_metrics = {self.stage+"_"+name: metric_fn.compute().item()
-                                 for name, metric_fn in self.steprunner.metrics_dict.items()}
+
+                epoch_metrics = self.steprunner.results
+
                 epoch_log = dict(
                     {self.stage+"_loss": epoch_loss}, **epoch_metrics)
                 loop.set_postfix(**epoch_log)
 
-                for name, metric_fn in self.steprunner.metrics_dict.items():
-                    metric_fn.reset()
+                # for name, metric_fn in self.steprunner.metrics_dict.items():
+                #     metric_fn.reset()
         return epoch_log
 
 
@@ -134,6 +146,11 @@ def train_model(args, net, optimizer, loss_fn, metrics_dict,
                 patience=5, monitor="val_loss", mode="min"):
 
     history = {}
+
+    if args.init:
+        net.apply(init_xavier)
+
+    init_weig = 0
 
     for epoch in range(1, epochs+1):
         printlog("Epoch {0} / {1}".format(epoch, epochs))
@@ -151,7 +168,7 @@ def train_model(args, net, optimizer, loss_fn, metrics_dict,
 
         # 2，validate -------------------------------------------------
         if val_data:
-            val_step_runner = StepRunner(net=net, stage="val",
+            val_step_runner = StepRunner(args=args, net=net, stage="val",
                                          loss_fn=loss_fn, metrics_dict=deepcopy(metrics_dict))
             val_epoch_runner = EpochRunner(val_step_runner)
             with torch.no_grad():
@@ -159,6 +176,14 @@ def train_model(args, net, optimizer, loss_fn, metrics_dict,
             val_metrics["epoch"] = epoch
             for name, metric in val_metrics.items():
                 history[name] = history.get(name, []) + [metric]
+
+        last_name, last_parms = net.named_parameters()[-1]
+        print(init_weig == torch.mean(last_parms.data))
+        init_weig = torch.mean(last_parms.data)
+        # for name, parms in net.named_parameters():
+        #     print('-->name:', name)
+        #     print('-->grad_requirs:', parms.requires_grad)
+        #     print('--weight', torch.mean(parms.data))
 
         # 3，early-stopping -------------------------------------------------
         arr_scores = history[monitor]
@@ -183,6 +208,7 @@ def run(train_dataloader, test_dataloader, args):
         model = CNNBiLSTM.CNNBiLSTM(args)
     else:
         pass
+    model = model.to(args.device)
     loss_fn = nn.BCEWithLogitsLoss()
     mode = 'max'
     if args.target in ['valence', 'arousal']:
@@ -201,7 +227,9 @@ def run(train_dataloader, test_dataloader, args):
                           patience=5,
                           monitor="val_{}".format(
                               list(metrics_dict.keys())[0]),
-                          mode=mode)
+                          mode=mode, ckpt_path=os.path.join(
+                              args.save_path, 'checkpoint.pt')
+                          )
 
 
 def main():
@@ -212,15 +240,13 @@ def main():
 
     print('\n'.join("%s: %s" % item for item in vars(args).items()))
 
-    device = torch.device(
-        'cuda' if torch.cuda.is_available() and args.use_cuda else 'cpu')
     for i, k in enumerate(spliter[args.valid]):
         args.k = i
         print('[Fold {}]'.format(i), '='*31)
         train_index = k['train_index']
         test_index = k['test_index']
         dataprepare = DataPrepare(args,
-                                  target='valence', data=data, train_index=train_index, test_index=test_index, device=device)
+                                  target='valence', data=data, train_index=train_index, test_index=test_index, device=args.device, batch_size=args.batch_size)
         train_dataloader, test_dataloader = dataprepare.get_data()
         run(train_dataloader, test_dataloader, args)
         if args.debug:
