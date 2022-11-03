@@ -9,8 +9,8 @@ class Params(object):
                  lr=0.01,
                  epochs=100,
                  valid='loso',
-                 target='valence_label',
-                 batch_size=64,
+                 target='valence',
+                 batch_size=8,
                  out_channels=64,
                  hidden_size=256,
                  num_layers=3,
@@ -32,8 +32,11 @@ class Params(object):
         self.debug = debug
         self.metrics_dict = {}
         if self.target in ['valence', 'arousal']:
-            self.metrics_dict = {'mse': mean_squared_error()}
+            self.metrics_dict = {'mse': mean_squared_error}
         else:
-            self.metrics_dict = {'f1': F1Score(), 'auc': auc}
+            self.metrics_dict = {'f1': F1Score, 'auc': auc}
         self.k = None
         self.results = []
+
+    def print_args(self):
+        print()

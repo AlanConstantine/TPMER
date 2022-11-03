@@ -178,7 +178,7 @@ def run(train_dataloader, test_dataloader, args):
         model = CNNBiLSTM.CNNBiLSTM(args)
     else:
         pass
-    loss_fn = nn.BCEWithLogitsLoss(args)
+    loss_fn = nn.BCEWithLogitsLoss()
     mode = 'max'
     if args.target in ['valence', 'arousal']:
         loss_fn = nn.MSELoss()
@@ -204,12 +204,14 @@ def main():
     spliter = load_model(
         r'./processed_signal/HKU956/400_4s_step_2s_spliter.pkl')
     data = pd.read_pickle(r'./processed_signal/HKU956/400_4s_step_2s.pkl')
-    print(args)
+
+    print('\n'.join("%s: %s" % item for item in vars(args).items()))
+
     device = torch.device(
         'cuda' if torch.cuda.is_available() and args.use_cuda else 'cpu')
-    for k in spliter[args.valid]:
-        args.k = k
-        print('[Fold {}]'.format(k), '='*31)
+    for i, k in enumerate(spliter[args.valid]):
+        args.k = i
+        print('[Fold {}]'.format(i), '='*31)
         train_index = k['train_index']
         test_index = k['test_index']
         dataprepare = DataPrepare(args,

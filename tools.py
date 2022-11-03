@@ -204,10 +204,10 @@ class DataPrepare(object):
 
         train_sampler = SequentialSampler(train_data)
         train_dataloader = DataLoader(
-            train_data, sampler=train_sampler, batch_size=self.batch_size, drop_last=True)
+            train_data, sampler=train_sampler, batch_size=self.batch_size, drop_last=False)
 
         test_sampler = SequentialSampler(test_data)
         test_dataloader = DataLoader(
-            test_data, sampler=test_sampler, batch_size=self.batch_size, drop_last=True)
+            test_data, sampler=test_sampler, batch_size=self.batch_size, drop_last=False)
 
         return train_dataloader, test_dataloader
