@@ -4,8 +4,8 @@
 
 
 from argparse import ArgumentParser
-from torchmetrics.functional import auc, mean_squared_error
-from torchmetrics import F1Score
+# from torchmetrics.functional import auc, mean_squared_error
+# from torchmetrics import F1Score
 from tools import *
 from CONSTANT import *
 from models import CNNBiLSTM, Transformer
@@ -58,6 +58,7 @@ class StepRunner:
 
     def step(self, features, labels):
         # loss
+        features.requires_grad = True
         preds = self.net(features)
 
         if self.optimizer is not None and self.stage == "train":
@@ -97,7 +98,7 @@ class StepRunner:
         self.net.train()
         return self.step(features, labels)
 
-    @torch.no_grad()
+    @ torch.no_grad()
     def eval_step(self, features, labels):
         self.net.eval()
         return self.step(features, labels)
@@ -172,13 +173,14 @@ def train_model(args, net, optimizer, loss_fn, metrics_dict,
             for name, metric in val_metrics.items():
                 history[name] = history.get(name, []) + [metric]
 
+        weights = {}
         for name, parms in net.named_parameters():
             # print('-->name:', name)
             # print('-->grad_requirs:', parms.requires_grad)
             # print('--weight', torch.mean(parms.data))
             # print('-->grad_value:', torch.mean(parms.grad))
-            if name == 'cnns.0.weight':
-                print(name, torch.mean(parms.data))
+            # if name == 'cnns.0.weight':
+            print(name, torch.mean(parms.data))
 
             # 3，early-stopping -------------------------------------------------
         arr_scores = history[monitor]
@@ -204,6 +206,8 @@ def run(train_dataloader, test_dataloader, args):
     else:
         pass
     model = model_.to(args.device)
+    for param in model.parameters():
+        param.requires_grad = True
     loss_fn = nn.BCEWithLogitsLoss()
     mode = 'max'
     if args.target in ['valence', 'arousal']:
