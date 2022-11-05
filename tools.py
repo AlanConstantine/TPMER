@@ -7,24 +7,28 @@ import os
 import pandas as pd
 import pickle
 import torch
-from torch.utils.data import (
-    TensorDataset, DataLoader, SequentialSampler, WeightedRandomSampler)
+from torch.utils.data import (TensorDataset, DataLoader, SequentialSampler,
+                              WeightedRandomSampler)
 
 
 def join_signals(df, target='valence'):
-    bvp_cols = [fea for fea in df.columns.values if fea.split('_')[0] in [
-        'BVP']]
-    eda_cols = [fea for fea in df.columns.values if fea.split('_')[0] in [
-        'EDA']]
-    temp_cols = [fea for fea in df.columns.values if fea.split('_')[0] in [
-        'TEMP']]
+    bvp_cols = [
+        fea for fea in df.columns.values if fea.split('_')[0] in ['BVP']
+    ]
+    eda_cols = [
+        fea for fea in df.columns.values if fea.split('_')[0] in ['EDA']
+    ]
+    temp_cols = [
+        fea for fea in df.columns.values if fea.split('_')[0] in ['TEMP']
+    ]
     hr_cols = [fea for fea in df.columns.values if fea.split('_')[0] in ['HR']]
 
     target_cols = ['valence', 'arousal', 'arousal_rating', 'valence_rating']
     group_cols = ['participant_id', 'song_id']
 
     signal_concats = []
-    for bvp, eda, temp, hr in zip(df[bvp_cols].values, df[eda_cols].values, df[temp_cols].values, df[hr_cols].values):
+    for bvp, eda, temp, hr in zip(df[bvp_cols].values, df[eda_cols].values,
+                                  df[temp_cols].values, df[hr_cols].values):
         signal_concats.append([bvp, eda, temp, hr])
 
     return np.array(signal_concats), df[[target]].values
@@ -46,7 +50,10 @@ def resample_by_interpolation(signal, input_fs, output_fs):
 
 
 def segment_generator(signal, win_size, step=1):
-    return [signal[i:i+win_size] for i in range(0, len(signal)-win_size+1, step)]
+    return [
+        signal[i:i + win_size] for i in range(0,
+                                              len(signal) - win_size + 1, step)
+    ]
 
 
 def plot_sig(sig):
@@ -63,8 +70,8 @@ def chauvenet_filter(signal):
 
     mask = prob < criterion
 
-    signal = pd.Series(np.ma.masked_array(data=signal, mask=mask,
-                                          fill_value=np.nan).filled())
+    signal = pd.Series(
+        np.ma.masked_array(data=signal, mask=mask, fill_value=np.nan).filled())
 
     return signal.interpolate()
 
@@ -73,8 +80,8 @@ def iqr_filter(signal):
     q75, q25 = np.percentile(signal, [75, 25])
     intr_qr = q75 - q25
 
-    max = q75+(1.5*intr_qr)
-    min = q25-(1.5*intr_qr)
+    max = q75 + (1.5 * intr_qr)
+    min = q25 - (1.5 * intr_qr)
 
     signal[signal < min] = np.nan
     signal[signal > max] = np.nan
@@ -134,18 +141,24 @@ def reduce_mem_usage(df, un_process, verbose=True):
             c_min = df[col].min()
             c_max = df[col].max()
             if str(col_type)[:3] == 'int':
-                if c_min > np.iinfo(np.int8).min and c_max < np.iinfo(np.int8).max:
+                if c_min > np.iinfo(np.int8).min and c_max < np.iinfo(
+                        np.int8).max:
                     df[col] = df[col].astype(np.int8)
-                elif c_min > np.iinfo(np.int16).min and c_max < np.iinfo(np.int16).max:
+                elif c_min > np.iinfo(np.int16).min and c_max < np.iinfo(
+                        np.int16).max:
                     df[col] = df[col].astype(np.int16)
-                elif c_min > np.iinfo(np.int32).min and c_max < np.iinfo(np.int32).max:
+                elif c_min > np.iinfo(np.int32).min and c_max < np.iinfo(
+                        np.int32).max:
                     df[col] = df[col].astype(np.int32)
-                elif c_min > np.iinfo(np.int64).min and c_max < np.iinfo(np.int64).max:
+                elif c_min > np.iinfo(np.int64).min and c_max < np.iinfo(
+                        np.int64).max:
                     df[col] = df[col].astype(np.int64)
             else:
-                if c_min > np.finfo(np.float16).min and c_max < np.finfo(np.float16).max:
+                if c_min > np.finfo(np.float16).min and c_max < np.finfo(
+                        np.float16).max:
                     df[col] = df[col].astype(np.float16)
-                elif c_min > np.finfo(np.float32).min and c_max < np.finfo(np.float32).max:
+                elif c_min > np.finfo(np.float32).min and c_max < np.finfo(
+                        np.float32).max:
                     df[col] = df[col].astype(np.float32)
                 else:
                     df[col] = df[col].astype(np.float64)
@@ -175,16 +188,28 @@ def load_model(filename):
 
 
 class DataPrepare(object):
-    def __init__(self, args, target, data, train_index, test_index, device, batch_size=64):
+
+    def __init__(self,
+                 args,
+                 target,
+                 data,
+                 train_index,
+                 test_index,
+                 device,
+                 batch_size=64):
 
         self.args = args
 
         X, y = join_signals(data, target=target)
-        xtrain, ytrain, xtest, ytest = X[train_index], y[train_index], X[test_index], y[test_index]
+        xtrain, ytrain, xtest, ytest = X[train_index], y[train_index], X[
+            test_index], y[test_index]
 
         if self.args.debug:
             xtrain, ytrain, xtest, ytest = xtrain[:
-                                                  100], ytrain[:100], xtest[:100], ytest[:100]
+                                                  100], ytrain[:
+                                                               100], xtest[:
+                                                                           100], ytest[:
+                                                                                       100]
         print(xtrain.shape, ytrain.shape, xtest.shape, ytest.shape)
 
         xtrain = torch.from_numpy(xtrain).to(torch.float32)
@@ -208,11 +233,15 @@ class DataPrepare(object):
         test_data = TensorDataset(self.xtest, self.ytest)
 
         train_sampler = SequentialSampler(train_data)
-        train_dataloader = DataLoader(
-            train_data, sampler=train_sampler, batch_size=self.batch_size, drop_last=False)
+        train_dataloader = DataLoader(train_data,
+                                      sampler=train_sampler,
+                                      batch_size=self.batch_size,
+                                      drop_last=False)
 
         test_sampler = SequentialSampler(test_data)
-        test_dataloader = DataLoader(
-            test_data, sampler=test_sampler, batch_size=self.batch_size, drop_last=False)
+        test_dataloader = DataLoader(test_data,
+                                     sampler=test_sampler,
+                                     batch_size=self.batch_size,
+                                     drop_last=False)
 
         return train_dataloader, test_dataloader
