@@ -7,20 +7,22 @@ import torch
 class Params(object):
     def __init__(self, model='CLSTM',
                  use_cuda=True,
-                 debug=True,
-                 lr=0.01,
-                 epochs=100,
+                 debug=False,
+                 lr=0.001,
+                 epochs=5,
                  valid='loso',
-                 target='valence_label',
-                 batch_size=16,
-                 out_channels=64,
-                 hidden_size=256,
-                 num_layers=2,
-                 fcn_input=201728,
+                 target='valence',
+                 batch_size=128,
+                 out_channels=32,
+                 hidden_size=64,
+                 num_layers=1,
+                 fcn_input=50432,
                  save_path='./output',
-                 init=True
+                 init=True,
+                 show_wei=False
                  ):
         self.model = model
+        self.show_wei = show_wei
         self.use_cuda = use_cuda
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() and self.use_cuda else 'cpu')
@@ -40,10 +42,10 @@ class Params(object):
         self.debug = debug
         self.metrics_dict = {}
         if self.target in ['valence', 'arousal']:
-            self.metrics_dict = {'mse': MeanSquaredError()}
+            self.metrics_dict = {'mse': MeanSquaredError().to(self.device)}
         else:
             self.metrics_dict = {'f1': F1Score().to(self.device),
-                                 #  'auc': AUC()
+                                 #  'auc': AUC().to(self.device)
                                  }
 
         self.save_path = save_path

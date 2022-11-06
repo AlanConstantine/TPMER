@@ -206,10 +206,8 @@ class DataPrepare(object):
 
         if self.args.debug:
             xtrain, ytrain, xtest, ytest = xtrain[:
-                                                  100], ytrain[:
-                                                               100], xtest[:
-                                                                           100], ytest[:
-                                                                                       100]
+                                                  1000], ytrain[:1000], xtest[:100], ytest[:100]
+
         print(xtrain.shape, ytrain.shape, xtest.shape, ytest.shape)
 
         xtrain = torch.from_numpy(xtrain).to(torch.float32)

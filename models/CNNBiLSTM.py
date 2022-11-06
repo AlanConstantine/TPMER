@@ -1,5 +1,6 @@
 import torch
 from torch import nn
+import torch.nn.functional as F
 
 
 class CNNBiLSTM(nn.Module):
@@ -7,46 +8,37 @@ class CNNBiLSTM(nn.Module):
         super().__init__()
         self.args = args
         self.cnns = nn.Sequential(
-            nn.Conv1d(4, 32, 3),
+            nn.Conv1d(4, 16, 3),
             nn.ReLU(),
             nn.MaxPool1d(kernel_size=2, stride=1),
-            nn.BatchNorm1d(32),
-            nn.Conv1d(32, args.out_channels, 3),
+            nn.BatchNorm1d(16),
+            nn.Conv1d(16, args.out_channels, 3),
             nn.MaxPool1d(kernel_size=2, stride=1),
-            nn.BatchNorm1d(64),
+            nn.BatchNorm1d(args.out_channels),
             nn.ReLU(),
         )
 
         self.lstm1 = nn.LSTM(input_size=args.out_channels,
-                             hidden_size=512,
+                             hidden_size=64,
                              num_layers=args.num_layers, batch_first=True,
                              bidirectional=True
                              )
 
-        self.lstm2 = nn.LSTM(input_size=512 * 2,
+        self.lstm2 = nn.LSTM(input_size=64 * 2,
                              hidden_size=args.hidden_size,
                              num_layers=args.num_layers, batch_first=True,
                              bidirectional=True
                              )
 
         self.fcn = nn.Sequential(
-            nn.Dropout(p=0.5),
-            nn.Linear(args.fcn_input, 1024),
+            nn.Dropout(p=0.2),
+            nn.Linear(args.fcn_input, 128),
             nn.ReLU(),
-            nn.Dropout(p=0.5),
-            nn.Linear(1024, 512),
+            nn.Dropout(p=0.2),
+            nn.Linear(128, 32),
             nn.ReLU(),
+            nn.Linear(32, 1)
         )
-
-        self.relu = nn.ReLU()
-
-        self.output = nn.Linear(512, 2)
-        if self.args.target in ['valence', 'arousal']:
-            self.output = nn.Linear(512, 1)
-
-        # self.classifier = nn.Linear(512, 2)
-
-        # self.regresser = nn.Linear(512, 1)
 
     def forward(self, x):
         """
@@ -55,17 +47,18 @@ class CNNBiLSTM(nn.Module):
         x = self.cnns(x)  # output [batch_size, channels, seq_len]
         x = x.permute(0, 2, 1)
         x, _ = self.lstm1(x)  # output [batch_size, seq_len, Hin]
-        x = self.relu(x)
+        x = F.relu(x)
         x, _ = self.lstm2(x)  # output [batch_size, seq_len, Hin]
-        x = self.relu(x)
+        x = F.relu(x)
         x = x.flatten(start_dim=1)
-        x = self.fcn(x)
-        if self.args.target in ['valence', 'arousal']:
-            output = self.output(x)
-            return output
-        else:
-            output = torch.sigmoid(self.output(x))
-            return output
+        output = self.fcn(x)
+        return output
+        # if self.args.target in ['valence', 'arousal']:
+        #     output = self.output(x)
+        #     return output
+        # else:
+        #     output = torch.sigmoid(self.output(x))
+        #     return output
 
 
 # pytorch计算图、梯度相关操作、固定参数训练以及训练过程中grad为Nonetype的原因https://zhuanlan.zhihu.com/p/438630330

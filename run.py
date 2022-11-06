@@ -37,7 +37,7 @@ torch.manual_seed(31)
 
 def printlog(info):
     nowtime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    print("\n"+"=========="*8 + "%s" % nowtime)
+    print("\n"+"======"*6 + "[%s]" % nowtime + "======"*6)
     print(str(info)+"\n")
 
 
@@ -57,20 +57,13 @@ class StepRunner:
         self.results = None
 
     def step(self, features, labels):
-        # loss
-        features.requires_grad = True
         preds = self.net(features)
 
         if self.optimizer is not None and self.stage == "train":
             self.optimizer.zero_grad()
 
         loss = None
-        if self.args.target in ['valence', 'arousal']:
-            loss = self.loss_fn(preds, labels)
-        else:
-            loss = self.loss_fn(torch.argmax(
-                preds, dim=1).reshape(-1, 1).to(torch.float32), labels.to(torch.float32))
-        loss.requires_grad_(True)
+        loss = self.loss_fn(preds, labels.float())
 
         if self.stage == "train":
             loss.backward()
@@ -79,16 +72,19 @@ class StepRunner:
         # metrics
         step_metrics = {}
         for name, metric_fn in self.metrics_dict.items():
+            # if self.stage+"_" + name not in step_metrics:
+            #     step_metrics[self.stage+"_" + name] = 0
+
             if self.args.target in ['valence', 'arousal']:
                 step_metrics[self.stage+"_" +
                              name] = metric_fn(preds, labels).item()
             else:
                 if name == 'f1':
                     step_metrics[self.stage+"_" +
-                                 name] = metric_fn(torch.argmax(preds, dim=1), labels).item()
+                                 name] = metric_fn(torch.round(preds), labels).item()
                 elif name == 'auc':
                     step_metrics[self.stage+"_" +
-                                 name] = metric_fn(preds[:, 1], labels).item()
+                                 name] = metric_fn(preds, labels).item()
                 else:
                     pass
         self.results = step_metrics
@@ -111,12 +107,17 @@ class StepRunner:
 
 
 class EpochRunner:
-    def __init__(self, steprunner):
+    def __init__(self, steprunner, args):
         self.steprunner = steprunner
         self.stage = steprunner.stage
+        self.args = args
 
     def __call__(self, dataloader):
         total_loss, step = 0, 0
+
+        epoch_metrics = {self.stage+'_'+name: 0 for name in list(
+            self.args.metrics_dict)}
+
         loop = tqdm(enumerate(dataloader), total=len(
             dataloader), file=sys.stdout)
         for i, batch in loop:
@@ -124,16 +125,22 @@ class EpochRunner:
             step_log = dict({self.stage+"_loss": loss}, **step_metrics)
             total_loss += loss
             step += 1
+            for name, scores in step_metrics.items():
+                epoch_metrics[name] += scores
+
             if i != len(dataloader)-1:
                 loop.set_postfix(**step_log)
             else:
                 epoch_loss = total_loss/step
 
-                epoch_metrics = self.steprunner.results
+                for name, scores in step_metrics.items():
+                    epoch_metrics[name] = round(epoch_metrics[name] / step, 4)
 
                 epoch_log = dict(
                     {self.stage+"_loss": epoch_loss}, **epoch_metrics)
                 loop.set_postfix(**epoch_log)
+
+        epoch_log.update(epoch_metrics)
 
         return epoch_log
 
@@ -156,7 +163,7 @@ def train_model(args, net, optimizer, loss_fn, metrics_dict,
                                        loss_fn=loss_fn, args=args, metrics_dict=deepcopy(
                                            metrics_dict),
                                        optimizer=optimizer)
-        train_epoch_runner = EpochRunner(train_step_runner)
+        train_epoch_runner = EpochRunner(train_step_runner, args)
         train_metrics = train_epoch_runner(train_data)
 
         for name, metric in train_metrics.items():
@@ -166,21 +173,21 @@ def train_model(args, net, optimizer, loss_fn, metrics_dict,
         if val_data:
             val_step_runner = StepRunner(args=args, net=net, stage="val",
                                          loss_fn=loss_fn, metrics_dict=deepcopy(metrics_dict))
-            val_epoch_runner = EpochRunner(val_step_runner)
+            val_epoch_runner = EpochRunner(val_step_runner, args)
             with torch.no_grad():
                 val_metrics = val_epoch_runner(val_data)
             val_metrics["epoch"] = epoch
             for name, metric in val_metrics.items():
                 history[name] = history.get(name, []) + [metric]
 
-        weights = {}
-        for name, parms in net.named_parameters():
-            # print('-->name:', name)
-            # print('-->grad_requirs:', parms.requires_grad)
-            # print('--weight', torch.mean(parms.data))
-            # print('-->grad_value:', torch.mean(parms.grad))
-            # if name == 'cnns.0.weight':
-            print(name, torch.mean(parms.data))
+        if args.show_wei:
+            for name, parms in net.named_parameters():
+                if name in ['cnns.0.weight', 'lstm2.bias_hh_l1']:
+                    print('\t', name, torch.mean(
+                        parms.data),
+                        parms.requires_grad,
+                        torch.mean(parms.grad)
+                    )
 
             # 3，early-stopping -------------------------------------------------
         arr_scores = history[monitor]
@@ -194,7 +201,7 @@ def train_model(args, net, optimizer, loss_fn, metrics_dict,
             print("<<<<<< {} without improvement in {} epoch, early stopping >>>>>>".format(
                 monitor, patience))
             break
-        net.load_state_dict(torch.load(ckpt_path))
+        # net.load_state_dict(torch.load(ckpt_path))
 
     return pd.DataFrame(history)
 
@@ -206,14 +213,12 @@ def run(train_dataloader, test_dataloader, args):
     else:
         pass
     model = model_.to(args.device)
-    for param in model.parameters():
-        param.requires_grad = True
     loss_fn = nn.BCEWithLogitsLoss()
     mode = 'max'
     if args.target in ['valence', 'arousal']:
         loss_fn = nn.MSELoss()
         mode = "min"
-    optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr)
     metrics_dict = args.metrics_dict
 
     history = train_model(args, model,
@@ -223,19 +228,21 @@ def run(train_dataloader, test_dataloader, args):
                           train_data=train_dataloader,
                           val_data=test_dataloader,
                           epochs=args.epochs,
-                          patience=5,
+                          patience=10,
                           monitor="val_{}".format(
                               list(metrics_dict.keys())[0]),
                           mode=mode, ckpt_path=os.path.join(
                               args.save_path, 'checkpoint.pt')
                           )
+    print(history)
 
 
 def main():
-    args = Params(debug=True)
+    args = Params()
     spliter = load_model(
         r'./processed_signal/HKU956/400_4s_step_2s_spliter.pkl')
-    data = pd.read_pickle(r'./processed_signal/HKU956/400_4s_step_2s.pkl')
+    # data = pd.read_pickle(r'./processed_signal/HKU956/400_4s_step_2s.pkl')
+    data = pd.read_csv(r'./processed_signal/HKU956/400_4s_step_2s.csv')
 
     print('\n'.join("%s: %s" % item for item in vars(args).items()))
 
