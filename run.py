@@ -240,7 +240,7 @@ def run(train_dataloader, test_dataloader, args):
                                           train_data=train_dataloader,
                                           val_data=test_dataloader,
                                           epochs=args.epochs,
-                                          patience=10,
+                                          patience=24,
                                           monitor="val_{}".format(
                                               list(metrics_dict.keys())[0]),
                                           mode=mode, ckpt_path=os.path.join(
