@@ -13,7 +13,7 @@ class Params(object):
                  lr=0.0001,
                  epochs=200,
                  valid='loao',
-                 target='valence',
+                 target='arousal',
                  batch_size=256,
                  out_channels=32,
                  hidden_size=64,
