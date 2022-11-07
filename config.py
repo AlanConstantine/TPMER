@@ -10,7 +10,7 @@ class Params(object):
     def __init__(self, model='CLSTM',
                  use_cuda=True,
                  debug=False,
-                 lr=0.001,
+                 lr=0.0001,
                  epochs=200,
                  valid='loao',
                  target='arousal_label',
