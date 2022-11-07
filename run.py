@@ -83,6 +83,9 @@ class StepRunner:
                 elif name == 'auc':
                     step_metrics[self.stage+"_" +
                                  name] = metric_fn(preds, labels).item()
+                elif name == 'acc':
+                    step_metrics[self.stage+"_" +
+                                 name] = metric_fn(torch.round(preds), labels).item()
                 else:
                     pass
         self.results = step_metrics

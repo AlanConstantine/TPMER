@@ -1,5 +1,5 @@
 from torchmetrics.functional import auc, mean_squared_error
-from torchmetrics import F1Score
+from torchmetrics import F1Score, Accuracy
 from torchmetrics import AUC, MeanSquaredError
 import torch
 import os
@@ -12,8 +12,8 @@ class Params(object):
                  debug=False,
                  lr=0.001,
                  epochs=200,
-                 valid='loso',
-                 target='arousal',
+                 valid='loao',
+                 target='arousal_label',
                  batch_size=128,
                  out_channels=32,
                  hidden_size=64,
@@ -46,7 +46,8 @@ class Params(object):
             self.metrics_dict = {'mse': MeanSquaredError().to(self.device)}
         else:
             self.metrics_dict = {'f1': F1Score().to(self.device),
-                                 #  'auc': AUC().to(self.device)
+                                 'acc':  Accuracy().to(self.device),
+                                 # 'auc': AUC().to(self.device)
                                  }
 
         self.save_path = './output/{}_{}_{}_{}_{}_{}'.format(
