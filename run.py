@@ -72,8 +72,6 @@ class StepRunner:
         # metrics
         step_metrics = {}
         for name, metric_fn in self.metrics_dict.items():
-            # if self.stage+"_" + name not in step_metrics:
-            #     step_metrics[self.stage+"_" + name] = 0
 
             if self.args.target in ['valence', 'arousal']:
                 step_metrics[self.stage+"_" +
@@ -145,18 +143,21 @@ class EpochRunner:
         return epoch_log
 
 
-def train_model(args, net, optimizer, loss_fn, metrics_dict,
+def train_model(args, net, optimizer, scheduler, loss_fn, metrics_dict,
                 train_data, val_data=None,
                 epochs=10, ckpt_path='checkpoint.pt',
                 patience=5, monitor="val_loss", mode="min"):
 
     history = {}
+    lrs = []
+
+    best_result = None
 
     if args.init:
         net.apply(init_xavier)
 
     for epoch in range(1, epochs+1):
-        printlog("Epoch {0} / {1}".format(epoch, epochs))
+        printlog("[Fold {0}] Epoch {1} / {2}".format(args.k, epoch, epochs))
 
         # 1，train -------------------------------------------------
         train_step_runner = StepRunner(net=net, stage="train",
@@ -180,6 +181,9 @@ def train_model(args, net, optimizer, loss_fn, metrics_dict,
             for name, metric in val_metrics.items():
                 history[name] = history.get(name, []) + [metric]
 
+            lrs.append(optimizer.param_groups[0]['lr'])
+            scheduler.step(val_metrics['val_loss'])
+
         if args.show_wei:
             for name, parms in net.named_parameters():
                 if name in ['cnns.0.weight', 'lstm2.bias_hh_l1']:
@@ -197,13 +201,17 @@ def train_model(args, net, optimizer, loss_fn, metrics_dict,
             torch.save(net.state_dict(), ckpt_path)
             print("<<<<<< reach best {0} : {1} >>>>>>".format(monitor,
                                                               arr_scores[best_score_idx]))
+            best_result = arr_scores[best_score_idx]
         if len(arr_scores)-best_score_idx > patience:
             print("<<<<<< {} without improvement in {} epoch, early stopping >>>>>>".format(
                 monitor, patience))
             break
-        # net.load_state_dict(torch.load(ckpt_path))
+        if not args.debug:
+            net.load_state_dict(torch.load(ckpt_path))
 
-    return pd.DataFrame(history)
+    history = pd.DataFrame(history)
+    history['lr'] = lrs
+    return history, {monitor: best_result}
 
 
 def run(train_dataloader, test_dataloader, args):
@@ -219,44 +227,60 @@ def run(train_dataloader, test_dataloader, args):
         loss_fn = nn.MSELoss()
         mode = "min"
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr)
+    scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=5,
+                                  verbose=True, threshold_mode='rel',
+                                  cooldown=0, min_lr=0, eps=1e-08
+                                  )
     metrics_dict = args.metrics_dict
 
-    history = train_model(args, model,
-                          optimizer,
-                          loss_fn,
-                          metrics_dict,
-                          train_data=train_dataloader,
-                          val_data=test_dataloader,
-                          epochs=args.epochs,
-                          patience=10,
-                          monitor="val_{}".format(
-                              list(metrics_dict.keys())[0]),
-                          mode=mode, ckpt_path=os.path.join(
-                              args.save_path, 'checkpoint.pt')
-                          )
-    print(history)
+    history_df, best_result = train_model(args, model,
+                                          optimizer, scheduler,
+                                          loss_fn,
+                                          metrics_dict,
+                                          train_data=train_dataloader,
+                                          val_data=test_dataloader,
+                                          epochs=args.epochs,
+                                          patience=10,
+                                          monitor="val_{}".format(
+                                              list(metrics_dict.keys())[0]),
+                                          mode=mode, ckpt_path=os.path.join(
+                                              args.save_path, 'fold{}_{}'.format(str(args.k), 'checkpoint.pt'))
+                                          )
+    return history_df, best_result
 
 
 def main():
-    args = Params()
     spliter = load_model(
         r'./processed_signal/HKU956/400_4s_step_2s_spliter.pkl')
-    # data = pd.read_pickle(r'./processed_signal/HKU956/400_4s_step_2s.pkl')
-    data = pd.read_csv(r'./processed_signal/HKU956/400_4s_step_2s.csv')
+    data = pd.read_pickle(r'./processed_signal/HKU956/400_4s_step_2s.pkl')
+    # data = pd.read_csv(r'./processed_signal/HKU956/400_4s_step_2s.csv')
 
+    args = Params()
     print('\n'.join("%s: %s" % item for item in vars(args).items()))
 
     for i, k in enumerate(spliter[args.valid]):
+        st = time.time()
         args.k = i
-        print('[Fold {}]'.format(i), '='*31)
+        print("\n" + "======="*6 + '[Fold {}]'.format(i), "======="*6)
         train_index = k['train_index']
         test_index = k['test_index']
         dataprepare = DataPrepare(args,
                                   target='valence', data=data, train_index=train_index, test_index=test_index, device=args.device, batch_size=args.batch_size)
         train_dataloader, test_dataloader = dataprepare.get_data()
-        run(train_dataloader, test_dataloader, args)
+        history_df, best_result = run(train_dataloader, test_dataloader, args)
+
+        time_used = time.time() - st
+        args.results[args.k] = {
+            'history': history_df,
+            'best_result': best_result,
+            'time_used': time_used
+        }
+        print('[Used time: {}s]'.format(round(time_used), 4))
+
         if args.debug:
             break
+    if not args.debug:
+        args.save_results(results=args.results)
 
 
 if __name__ == '__main__':

@@ -2,6 +2,8 @@ from torchmetrics.functional import auc, mean_squared_error
 from torchmetrics import F1Score
 from torchmetrics import AUC, MeanSquaredError
 import torch
+import os
+import pickle
 
 
 class Params(object):
@@ -9,15 +11,14 @@ class Params(object):
                  use_cuda=True,
                  debug=False,
                  lr=0.001,
-                 epochs=5,
-                 valid='loso',
-                 target='valence',
+                 epochs=100,
+                 valid='cv',
+                 target='arousal',
                  batch_size=128,
                  out_channels=32,
                  hidden_size=64,
                  num_layers=1,
                  fcn_input=50432,
-                 save_path='./output',
                  init=True,
                  show_wei=False
                  ):
@@ -48,6 +49,19 @@ class Params(object):
                                  #  'auc': AUC().to(self.device)
                                  }
 
-        self.save_path = save_path
+        self.save_path = './output/{}_{}_{}_{}_{}_{}'.format(
+            target, model, valid, lr, batch_size, out_channels)
         self.k = None
-        self.results = []
+        self.results = {}
+        if not self.debug:
+            self.create_log_folder()
+
+    def create_log_folder(self):
+        if not os.path.exists(r'./output'):
+            os.makedirs(r'./output')
+        if not os.path.exists(self.save_path):
+            os.makedirs(self.save_path)
+
+    def save_results(self, results):
+        with open(os.path.join(self.save_path, 'results.pkl'), 'wb') as handle:
+            pickle.dump(results, handle, protocol=pickle.HIGHEST_PROTOCOL)
