@@ -13,7 +13,7 @@ class Params(object):
                  lr=0.001,
                  epochs=200,
                  valid='loso',
-                 target='valence_label',
+                 target='valence',
                  batch_size=128,
                  out_channels=32,
                  hidden_size=64,
