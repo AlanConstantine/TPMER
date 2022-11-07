@@ -12,7 +12,7 @@ class Params(object):
                  debug=False,
                  lr=0.001,
                  epochs=200,
-                 valid='cv',
+                 valid='loso',
                  target='arousal_label',
                  batch_size=128,
                  out_channels=32,
