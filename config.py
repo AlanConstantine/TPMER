@@ -14,7 +14,7 @@ class Params(object):
                  epochs=200,
                  valid='loao',
                  target='arousal_label',
-                 batch_size=128,
+                 batch_size=256,
                  out_channels=32,
                  hidden_size=64,
                  num_layers=1,
