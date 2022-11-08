@@ -7,19 +7,21 @@ import pickle
 
 
 class Params(object):
-    def __init__(self, model='CLSTM',
+    def __init__(self,
+                 model='CTransformer',
                  use_cuda=True,
-                 debug=True,
+                 debug=False,
                  lr=0.0001,
                  epochs=200,
-                 valid='loao',
+                 valid='loso',
                  target='arousal',
                  batch_size=256,
                  out_channels=32,
                  hidden_size=64,  # lstm hidden_size
                  nlayers=2,  # transformer or lstm layer num
                  nhead=4,  # transformer head num
-                 fcn_input=50432,
+                 #  fcn_input=50432,  # LSTM fcn num
+                 fcn_input=25216,  # Transformer fcn num
                  init=True,
                  show_wei=False
                  ):
