@@ -16,6 +16,7 @@ class Params(object):
                  valid='loso',
                  target='arousal',
                  batch_size=256,
+                 dropout=0.2,
                  out_channels=32,
                  hidden_size=64,  # lstm hidden_size
                  nlayers=2,  # transformer or lstm layer num
@@ -40,6 +41,8 @@ class Params(object):
         self.lr = lr
 
         self.init = init
+
+        self.dropout = dropout
 
         self.out_channels = out_channels
         self.hidden_size = hidden_size
