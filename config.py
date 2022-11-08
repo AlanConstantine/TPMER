@@ -22,7 +22,7 @@ class Params(object):
                  nlayers=2,  # transformer or lstm layer num
                  nhead=4,  # transformer head num
                  #  fcn_input=50432,  # LSTM fcn num
-                 fcn_input=25216,  # Transformer fcn num
+                 fcn_input=12608,  # Transformer fcn num
                  init=True,
                  show_wei=False
                  ):
