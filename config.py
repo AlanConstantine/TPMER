@@ -9,15 +9,16 @@ import pickle
 class Params(object):
     def __init__(self, model='CLSTM',
                  use_cuda=True,
-                 debug=False,
+                 debug=True,
                  lr=0.0001,
                  epochs=200,
                  valid='loao',
                  target='arousal',
                  batch_size=256,
                  out_channels=32,
-                 hidden_size=64,
-                 num_layers=1,
+                 hidden_size=64,  # lstm hidden_size
+                 nlayers=2,  # transformer or lstm layer num
+                 nhead=4,  # transformer head num
                  fcn_input=50432,
                  init=True,
                  show_wei=False
@@ -29,18 +30,22 @@ class Params(object):
             'cuda' if torch.cuda.is_available() and self.use_cuda else 'cpu')
         self.batch_size = batch_size
         self.valid = valid
+        self.debug = debug
         self.target = target
         self.epochs = epochs
+        if self.debug:
+            self.epochs = 5
         self.lr = lr
 
         self.init = init
 
         self.out_channels = out_channels
         self.hidden_size = hidden_size
-        self.num_layers = num_layers
         self.fcn_input = fcn_input
 
-        self.debug = debug
+        self.nlayers = nlayers
+        self.nhead = nhead
+
         self.metrics_dict = {}
         if self.target in ['valence', 'arousal']:
             self.metrics_dict = {'mse': MeanSquaredError().to(self.device)}

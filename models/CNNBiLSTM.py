@@ -20,13 +20,13 @@ class CNNBiLSTM(nn.Module):
 
         self.lstm1 = nn.LSTM(input_size=args.out_channels,
                              hidden_size=64,
-                             num_layers=args.num_layers, batch_first=True,
+                             num_layers=args.nlayers, batch_first=True,
                              bidirectional=True
                              )
 
         self.lstm2 = nn.LSTM(input_size=64 * 2,
                              hidden_size=args.hidden_size,
-                             num_layers=args.num_layers, batch_first=True,
+                             num_layers=args.nlayers, batch_first=True,
                              bidirectional=True
                              )
 
@@ -53,42 +53,3 @@ class CNNBiLSTM(nn.Module):
         x = x.flatten(start_dim=1)
         output = self.fcn(x)
         return output
-        # if self.args.target in ['valence', 'arousal']:
-        #     output = self.output(x)
-        #     return output
-        # else:
-        #     output = torch.sigmoid(self.output(x))
-        #     return output
-
-
-# pytorch计算图、梯度相关操作、固定参数训练以及训练过程中grad为Nonetype的原因https://zhuanlan.zhihu.com/p/438630330
-
-# class NN(nn.Module):
-#     def __init__(self, args):
-#         super().__init__()
-#         self.args = args
-#         self.nn = nn.Sequential(nn.Linear(400 * 4, 1024),
-#                                 nn.ReLU(),
-#                                 nn.Linear(1024, 512),
-#                                 nn.ReLU(),
-#                                 nn.Linear(512, 512),
-#                                 nn.ReLU(),
-#                                 nn.Linear(512, 512),
-#                                 nn.ReLU(),
-#                                 nn.Linear(512, 256),
-#                                 nn.ReLU(),
-#                                 )
-
-#         self.output = nn.Linear(256, 2)
-#         if self.args.target in ['valence', 'arousal']:
-#             self.output = nn.Linear(256, 1)
-
-#     def forwar(self, x):
-#         x = x.flatten(start_dim=1)
-#         x = self.nn(x)
-#         if self.args.target in ['valence', 'arousal']:
-#             output = self.output(x)
-#             return output
-#         else:
-#             output = torch.sigmoid(self.output(x))
-#             return output

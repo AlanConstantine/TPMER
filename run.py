@@ -8,7 +8,7 @@ from argparse import ArgumentParser
 # from torchmetrics import F1Score
 from tools import *
 from CONSTANT import *
-from models import CNNBiLSTM, Transformer
+from models import CNNBiLSTM, CNNTransformer
 from config import Params
 from torch.utils.data import (
     TensorDataset, DataLoader, SequentialSampler, WeightedRandomSampler)
@@ -200,7 +200,7 @@ def train_model(args, net, optimizer, scheduler, loss_fn, metrics_dict,
         arr_scores = history[monitor]
         best_score_idx = np.argmax(
             arr_scores) if mode == "max" else np.argmin(arr_scores)
-        if best_score_idx == len(arr_scores)-1:
+        if best_score_idx == len(arr_scores)-1 and not args.debug:
             torch.save(net.state_dict(), ckpt_path)
             print("<<<<<< reach best {0} : {1} >>>>>>".format(monitor,
                                                               arr_scores[best_score_idx]))
@@ -222,7 +222,7 @@ def run(train_dataloader, test_dataloader, args):
     if args.model == 'CLSTM':
         model_ = CNNBiLSTM.CNNBiLSTM(args)
     else:
-        pass
+        model_ = CNNTransformer.CTransformer(args)
     model = model_.to(args.device)
     loss_fn = nn.BCEWithLogitsLoss()
     mode = 'max'

@@ -1,10 +1,16 @@
 data/
 
+*test.ipynb
+*debug.ipynb
+*nn.ipynb
+*nn copy.ipynb
+
 *.xlsx
 *.zip
 *.mp3
 *.csv
 *.json
+conformer/
 
 info.txt
 
