@@ -2,6 +2,8 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 import numpy as np
+from torch.nn import TransformerEncoder, TransformerEncoderLayer
+
 
 class PositionalEncoding(nn.Module):
     # adapted from https://pytorch.org/tutorials/beginner/transformer_tutorial.html
@@ -10,7 +12,8 @@ class PositionalEncoding(nn.Module):
         self.dropout = nn.Dropout(p=dropout)
 
         position = torch.arange(max_len).unsqueeze(1)
-        div_term = torch.exp(torch.arange(0, d_model, 2) * (-np.log(10000.0) / d_model))
+        div_term = torch.exp(torch.arange(0, d_model, 2)
+                             * (-np.log(10000.0) / d_model))
         pe = torch.zeros(max_len, 1, d_model)
         pe[:, 0, 0::2] = torch.sin(position * div_term)
         pe[:, 0, 1::2] = torch.cos(position * div_term)
@@ -23,18 +26,23 @@ class PositionalEncoding(nn.Module):
         """
         x = x + self.pe[:x.size(0)]
         return self.dropout(x)
-    
+
+
 class TransformerBlock(nn.Module):
     def __init__(self, args):
         super().__init__()
         self.args = args
-        self.pos_encoder = PositionalEncoding(self.args.out_channels, args.dropout)
-        self.encoder_layers = TransformerEncoderLayer(d_model=self.args.out_channels, nhead=self.args.nhead, dropout=args.dropout)
-        self.transformer_encoder = TransformerEncoder(self.encoder_layers, self.args.nlayers, norm=None)
-        self.decoder = nn.Linear(self.args.out_channels, self.args.out_channels)
-        
+        self.pos_encoder = PositionalEncoding(
+            self.args.out_channels, args.dropout)
+        self.encoder_layers = TransformerEncoderLayer(
+            d_model=self.args.out_channels, nhead=self.args.nhead, dropout=args.dropout)
+        self.transformer_encoder = TransformerEncoder(
+            self.encoder_layers, self.args.nlayers, norm=None)
+        self.decoder = nn.Linear(
+            self.args.out_channels, self.args.out_channels)
+
         self.init_weights()
-        
+
     def init_weights(self):
         initrange = 0.1
         self.decoder.bias.data.zero_()
@@ -54,6 +62,7 @@ class TransformerBlock(nn.Module):
         output = self.decoder(output)
         return output
 
+
 class CTransformer(nn.Module):
     def __init__(self, args):
         super().__init__()
@@ -67,7 +76,7 @@ class CTransformer(nn.Module):
             nn.BatchNorm1d(args.out_channels),
             nn.ReLU(),
         )
-        
+
         self.transformer = TransformerBlock(args)
 
         self.fcn = nn.Sequential(
@@ -85,12 +94,13 @@ class CTransformer(nn.Module):
         input [batch_size, channels, seq_len]
         """
         x = self.cnns(x)  # output [batch_size, channels, seq_len]
-        
-        x = x.permute(2, 0, 1) # permute to [seq_len, batch_size, channels]
-        x = self.transformer(x) # output [seq_len, batch_size, channels]
-        x = x.permute(1, 0, 2) # permute to [batch_size, seq_len, channels]
+
+        x = x.permute(2, 0, 1)  # permute to [seq_len, batch_size, channels]
+        x = self.transformer(x)  # output [seq_len, batch_size, channels]
+        x = x.permute(1, 0, 2)  # permute to [batch_size, seq_len, channels]
         x = F.relu(x)
-        
-        x = x.flatten(start_dim=1) # flatten to [batch_size, seq_len * channels]
+
+        # flatten to [batch_size, seq_len * channels]
+        x = x.flatten(start_dim=1)
         output = self.fcn(x)
         return output
