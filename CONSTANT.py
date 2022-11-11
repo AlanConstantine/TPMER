@@ -1,5 +1,5 @@
 HKU_DIR = r'./HKU956/1. physiological_signals/'  # HKU956 dir
-KEC_DIR = r''  # KEmoCon dir
+KEC_DIR = r'./KEmoCon/segments/'  # KEmoCon dir
 
 PROCESSED_DIR = r'./processed_signal'
 

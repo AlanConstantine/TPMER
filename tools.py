@@ -4,11 +4,17 @@ from scipy.signal import butter, lfilter
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+import json
 import pandas as pd
 import pickle
 import torch
 from torch.utils.data import (TensorDataset, DataLoader, SequentialSampler,
                               WeightedRandomSampler)
+
+
+def load_json(filepath):
+    with open(filepath, 'r') as f:
+        content = json.load(f)
 
 
 def join_signals(df, target='valence'):
