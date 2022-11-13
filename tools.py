@@ -15,6 +15,7 @@ from torch.utils.data import (TensorDataset, DataLoader, SequentialSampler,
 def load_json(filepath):
     with open(filepath, 'r') as f:
         content = json.load(f)
+    return content
 
 
 def join_signals(df, target='valence'):
