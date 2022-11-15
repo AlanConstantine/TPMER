@@ -8,8 +8,7 @@ import pickle
 
 class Params(object):
     def __init__(self,
-                 data=r'./processed_signal/KEmoCon/KEC_400.pkl',
-                 spliter=r'./processed_signal/KEmoCon/KEC_400_spliter.pkl',
+                 dataset='KEC',
                  model='CTransformer',
                  use_cuda=True,
                  debug=False,
@@ -28,8 +27,12 @@ class Params(object):
                  init=True,
                  show_wei=False
                  ):
-        self.data = data
-        self.spliter = spliter
+
+        self.data = r'./processed_signal/HKU956/400_4s_step_2s.pkl'
+        self.spliter = r'./processed_signal/HKU956/400_4s_step_2s_spliter.pkl'
+        if dataset == 'KEC':
+            self.data = r'./processed_signal/KEmoCon/KEC_400.pkl'
+            self.spliter = r'./processed_signal/KEmoCon/KEC_400_spliter.pkl'
         self.model = model
         self.show_wei = show_wei
         self.use_cuda = use_cuda
