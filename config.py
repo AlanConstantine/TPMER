@@ -8,6 +8,8 @@ import pickle
 
 class Params(object):
     def __init__(self,
+                 data=r'./processed_signal/KEmoCon/KEC_400.pkl',
+                 spliter=r'./processed_signal/KEmoCon/KEC_400_spliter.pkl',
                  model='CTransformer',
                  use_cuda=True,
                  debug=False,
@@ -15,7 +17,7 @@ class Params(object):
                  epochs=200,
                  valid='loso',
                  target='arousal_label',
-                 batch_size=256,
+                 batch_size=128,
                  dropout=0.2,
                  out_channels=32,
                  hidden_size=64,  # lstm hidden_size
@@ -26,6 +28,8 @@ class Params(object):
                  init=True,
                  show_wei=False
                  ):
+        self.data = data
+        self.spliter = spliter
         self.model = model
         self.show_wei = show_wei
         self.use_cuda = use_cuda
