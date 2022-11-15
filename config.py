@@ -8,7 +8,7 @@ import pickle
 
 class Params(object):
     def __init__(self,
-                 dataset='KEC',
+                 dataset='HKU',
                  model='CTransformer',
                  use_cuda=True,
                  debug=False,
