@@ -14,6 +14,7 @@ conformer/
 
 info.txt
 
+*.pkl
 HKU956/
 output/
 datasets/
