@@ -16,7 +16,7 @@ class Params(object):
                  epochs=200,
                  valid='loso',
                  target='arousal_label',
-                 batch_size=128,
+                 batch_size=256,
                  dropout=0.2,
                  out_channels=32,
                  hidden_size=64,  # lstm hidden_size
