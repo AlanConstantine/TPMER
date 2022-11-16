@@ -15,7 +15,7 @@ class Params(object):
                  lr=0.0001,
                  epochs=200,
                  valid='loso',
-                 target='arousal',
+                 target='valence_label',
                  batch_size=32,
                  dropout=0.2,
                  out_channels=32,
