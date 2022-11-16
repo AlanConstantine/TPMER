@@ -5,6 +5,7 @@ data/
 *nn.ipynb
 *nn copy.ipynb
 
+*.pt
 *.xlsx
 *.zip
 *.mp3
