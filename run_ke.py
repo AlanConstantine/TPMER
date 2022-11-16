@@ -55,6 +55,7 @@ class StepRunner:
         self.optimizer = optimizer
         self.args = args
         self.results = None
+        self.sig = nn.Sigmoid()
 
     def step(self, features, labels):
         preds = self.net(features)
@@ -62,7 +63,7 @@ class StepRunner:
         if self.optimizer is not None and self.stage == "train":
             self.optimizer.zero_grad()
 
-        loss = None
+        
         loss = self.loss_fn(preds, labels.float())
 
         if self.stage == "train":
@@ -79,10 +80,10 @@ class StepRunner:
             else:
                 if name == 'f1':
                     step_metrics[self.stage+"_" +
-                                 name] = metric_fn(torch.round(preds), labels).item()
+                                 name] = metric_fn(torch.round(self.sig(preds)).long(), labels).item()
                 elif name == 'auc':
                     step_metrics[self.stage+"_" +
-                                 name] = metric_fn(preds, labels).item()
+                                 name] = metric_fn(torch.round(self.sig(preds)).long(), labels).item()
                 elif name == 'acc':
                     step_metrics[self.stage+"_" +
                                  name] = metric_fn(torch.round(preds), labels).item()
