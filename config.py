@@ -8,15 +8,15 @@ import pickle
 
 class Params(object):
     def __init__(self,
-                 dataset='HKU',
+                 dataset='KEC',
                  model='CTransformer',
                  use_cuda=True,
                  debug=False,
                  lr=0.0001,
                  epochs=200,
                  valid='loso',
-                 target='arousal_label',
-                 batch_size=256,
+                 target='arousal',
+                 batch_size=64,
                  dropout=0.2,
                  out_channels=32,
                  hidden_size=64,  # lstm hidden_size
