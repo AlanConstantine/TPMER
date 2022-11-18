@@ -1,14 +1,18 @@
-from torchmetrics.functional import auc, mean_squared_error
+# -*- coding: utf-8 -*-
+# @Author: Alan Lau
+# @Date: 2022-11-16 23:41:33
+
 from torchmetrics import F1Score, Accuracy
-from torchmetrics import AUC, MeanSquaredError
+from torchmetrics import MeanSquaredError
 import torch
+from torch import nn
 import os
 import pickle
 
 
 class Params(object):
     def __init__(self,
-                 dataset='HKU956',
+                 dataset='KEC',
                  model='CTransformer',
                  use_cuda=True,
                  debug=False,
@@ -16,7 +20,7 @@ class Params(object):
                  epochs=200,
                  valid='loso',
                  target='valence_label',
-                 batch_size=256,
+                 batch_size=64,
                  dropout=0.2,
                  out_channels=32,
                  hidden_size=64,  # lstm hidden_size
@@ -25,7 +29,8 @@ class Params(object):
                  #  fcn_input=50432,  # LSTM fcn num
                  fcn_input=12608,  # Transformer fcn num
                  init=True,
-                 show_wei=False
+                 show_wei=False,
+                 pretrain=True
                  ):
 
         self.data = r'./processed_signal/HKU956/400_4s_step_2s.pkl'
@@ -34,6 +39,10 @@ class Params(object):
             self.data = r'./processed_signal/KEmoCon/KEC_400.pkl'
             self.spliter = r'./processed_signal/KEmoCon/KEC_400_spliter.pkl'
         self.model = model
+
+        self.pretrain = pretrain
+        self.pretrain_model = r'./output/HKU956/valence_CTransformer_loso_0.0001_256_32/fold2_checkpoint.pt'
+
         self.show_wei = show_wei
         self.use_cuda = use_cuda
         self.device = torch.device(
@@ -67,12 +76,22 @@ class Params(object):
                                  # 'auc': AUC().to(self.device)
                                  }
 
-        self.save_path = './output/{}_{}_{}_{}_{}_{}'.format(
-            target, model, valid, lr, batch_size, out_channels)
+        self.save_path = './output/{}_{}_{}_{}_{}_{}_{}_{}'.format(
+            self.pretrain, dataset, target, model, valid, lr, batch_size, out_channels)
         self.k = None
         self.results = {}
         if not self.debug:
             self.create_log_folder()
+
+        self.fcn = nn.Sequential(
+            nn.Dropout(p=0.2),
+            nn.Linear(self.fcn_input, 128),
+            nn.ReLU(),
+            nn.Dropout(p=0.2),
+            nn.Linear(128, 32),
+            nn.ReLU(),
+            nn.Linear(32, 1)
+        )
 
     def create_log_folder(self):
         if not os.path.exists(r'./output'):
