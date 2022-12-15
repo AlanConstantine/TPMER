@@ -12,6 +12,9 @@ data/
 *.json
 conformer/
 
+WESAD/
+PPGFieldStudyDataset/
+
 info.txt
 
 HKU956/
