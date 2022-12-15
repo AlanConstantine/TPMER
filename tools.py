@@ -4,11 +4,34 @@ from scipy.signal import butter, lfilter
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+import json
 import pandas as pd
 import pickle
 import torch
 from torch.utils.data import (TensorDataset, DataLoader, SequentialSampler,
                               WeightedRandomSampler)
+
+
+def parse_res(res):
+    score = []
+    for fold, his in res.items():
+        if 'val_mse' in his['best_result']:
+            score.append(his['best_result']['val_mse'])
+        else:
+            score.append(his['best_result']['val_f1'])
+    return round(np.mean(score), 6)
+
+
+def load_json(filepath):
+    with open(filepath, 'r') as f:
+        content = json.load(f)
+    return content
+
+
+def load_dict_model(path):
+    with open(path, 'rb') as handle:
+        m = pickle.load(handle)
+    return m
 
 
 def join_signals(df, target='valence'):

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # @Author: Alan Lau
-# @Date: 2022-11-02 17:26:08
+# @Date: 2022-11-16 00:35:04
 
 
 from argparse import ArgumentParser
@@ -55,6 +55,7 @@ class StepRunner:
         self.optimizer = optimizer
         self.args = args
         self.results = None
+        self.sig = nn.Sigmoid()
 
     def step(self, features, labels):
         preds = self.net(features)
@@ -62,7 +63,6 @@ class StepRunner:
         if self.optimizer is not None and self.stage == "train":
             self.optimizer.zero_grad()
 
-        loss = None
         loss = self.loss_fn(preds, labels.float())
 
         if self.stage == "train":
@@ -79,10 +79,10 @@ class StepRunner:
             else:
                 if name == 'f1':
                     step_metrics[self.stage+"_" +
-                                 name] = metric_fn(torch.round(preds), labels).item()
+                                 name] = metric_fn(torch.round(self.sig(preds)).long(), labels).item()
                 elif name == 'auc':
                     step_metrics[self.stage+"_" +
-                                 name] = metric_fn(preds, labels).item()
+                                 name] = metric_fn(torch.round(self.sig(preds)).long(), labels).item()
                 elif name == 'acc':
                     step_metrics[self.stage+"_" +
                                  name] = metric_fn(torch.round(preds), labels).item()
@@ -219,11 +219,21 @@ def train_model(args, net, optimizer, scheduler, loss_fn, metrics_dict,
 
 def run(train_dataloader, test_dataloader, args):
     model = None
-    if args.model == 'CLSTM':
-        model_ = CNNBiLSTM.CNNBiLSTM(args)
+    if args.pretrain:
+        model = CNNTransformer.CTransformer(args)
+        model.load_state_dict(torch.load(args.pretrain_model))
+        model.fcn = args.fcn
+    elif args.model == 'CL':  # CNN+BiLSTM
+        model = CNNBiLSTM.CNNBiLSTM(args)
+    elif args.model == 'CT':  # CNN+Transformer
+        model = CNNTransformer.CTransformer(args)
+    elif args.model == 'LS':  # BiLSTM
+        model = CNNTransformer.CTransformer(args)
+    elif args.model == 'TF':  # Transformer
+        model = CNNTransformer.CTransformer(args)
     else:
-        model_ = CNNTransformer.CTransformer(args)
-    model = model_.to(args.device)
+        pass
+    model = model.to(args.device)
     loss_fn = nn.BCEWithLogitsLoss()
     mode = 'max'
     if args.target in ['valence', 'arousal']:
@@ -253,13 +263,12 @@ def run(train_dataloader, test_dataloader, args):
 
 
 def main():
-    spliter = load_model(
-        r'./processed_signal/HKU956/400_4s_step_2s_spliter.pkl')
-    data = pd.read_pickle(r'./processed_signal/HKU956/400_4s_step_2s.pkl')
-    # data = pd.read_csv(r'./processed_signal/HKU956/400_4s_step_2s.csv')
 
     args = Params()
     print('\n'.join("%s: %s" % item for item in vars(args).items()))
+
+    spliter = load_model(args.spliter)
+    data = pd.read_pickle(args.data)
 
     for i, k in enumerate(spliter[args.valid]):
         st = time.time()
@@ -268,7 +277,7 @@ def main():
         train_index = k['train_index']
         test_index = k['test_index']
         dataprepare = DataPrepare(args,
-                                  target='valence', data=data, train_index=train_index, test_index=test_index, device=args.device, batch_size=args.batch_size)
+                                  target=args.target, data=data, train_index=train_index, test_index=test_index, device=args.device, batch_size=args.batch_size)
         train_dataloader, test_dataloader = dataprepare.get_data()
         history_df, best_result = run(train_dataloader, test_dataloader, args)
 

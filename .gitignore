@@ -5,21 +5,27 @@ data/
 *nn.ipynb
 *nn copy.ipynb
 
+*.pt
 *.xlsx
 *.zip
 *.mp3
 *.csv
 *.json
 conformer/
+old_run.py
 
 WESAD/
 PPGFieldStudyDataset/
 
 info.txt
 
+*.pkl
 HKU956/
 output/
 datasets/
+AffectiveROAD_Data/
+PPGFieldStudyDataset/
+WESAD/
 *torchviz*
 
 # Byte-compiled / optimized / DLL files
