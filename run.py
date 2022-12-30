@@ -8,7 +8,7 @@ from argparse import ArgumentParser
 # from torchmetrics import F1Score
 from tools import *
 from CONSTANT import *
-from models import CNNBiLSTM, CNNTransformer
+from models import CNNBiLSTM, CNNTransformer, SigRep
 from config import Params
 from torch.utils.data import (
     TensorDataset, DataLoader, SequentialSampler, WeightedRandomSampler)
@@ -231,6 +231,8 @@ def run(train_dataloader, test_dataloader, args):
         model = CNNTransformer.CTransformer(args)
     elif args.model == 'TF':  # Transformer
         model = CNNTransformer.CTransformer(args)
+    elif args.model == 'SG':  # SigRep
+        model = SigRep.SigRepSimple(args)
     else:
         pass
     model = model.to(args.device)

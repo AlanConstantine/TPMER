@@ -13,14 +13,14 @@ import pickle
 class Params(object):
     def __init__(self,
                  dataset='KEC',
-                 model='CTransformer',
-                 use_cuda=True,
-                 debug=False,
+                 model='SG',
+                 use_cuda=False,
+                 debug=True,
                  lr=0.0001,
                  epochs=200,
-                 valid='loso',
-                 target='valence_label',
-                 batch_size=64,
+                 valid='cv',
+                 target='valence',
+                 batch_size=2,
                  dropout=0.2,
                  out_channels=32,
                  hidden_size=64,  # lstm hidden_size
@@ -30,7 +30,7 @@ class Params(object):
                  fcn_input=12608,  # Transformer fcn num
                  init=True,
                  show_wei=False,
-                 pretrain=True
+                 pretrain=False
                  ):
 
         self.data = r'./processed_signal/HKU956/400_4s_step_2s.pkl'
