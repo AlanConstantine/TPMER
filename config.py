@@ -20,7 +20,7 @@ class Params(object):
                  epochs=200,
                  valid='cv',
                  target='valence',
-                 batch_size=2,
+                 batch_size=32,
                  dropout=0.2,
                  out_channels=32,
                  hidden_size=64,  # lstm hidden_size

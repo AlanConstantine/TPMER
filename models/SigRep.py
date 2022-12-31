@@ -62,6 +62,7 @@ class SignalEncoder(nn.Module):
         super().__init__()
 
         self.seq = seq
+
         self.output_size = output_size
 
         self.inception1 = Inception(in_channel=1)
@@ -73,7 +74,6 @@ class SignalEncoder(nn.Module):
         self.maxpool2 = nn.MaxPool1d(kernel_size=2)
         self.maxpool3 = nn.MaxPool1d(kernel_size=2)
         # self.maxpool4 = nn.MaxPool1d(kernel_size=2)
-
         self.fcn = nn.Linear(seq, self.output_size)
 
     def forward(self, x):
@@ -126,7 +126,7 @@ class SigRepSimple(nn.Module):
     def __init__(self, output_size=40):
         super().__init__()
 
-        self.output_size = output_size
+        self.output_size = 40
         # self.n_class = n_class
 
         self.signal_embedd = SignalEmbedding(output_size=self.output_size)
