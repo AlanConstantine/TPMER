@@ -12,7 +12,7 @@ import pickle
 
 class Params(object):
     def __init__(self,
-                 dataset='KEC',
+                 dataset='WES',
                  model='SG',
                  use_cuda=False,
                  debug=True,
@@ -38,6 +38,9 @@ class Params(object):
         if dataset == 'KEC':
             self.data = r'./processed_signal/KEmoCon/KEC_400.pkl'
             self.spliter = r'./processed_signal/KEmoCon/KEC_400_spliter.pkl'
+        if dataset == 'WES':
+            self.data = r'./processed_signal/WESAD/400_4s_step_2s.pkl'
+            self.spliter = r'./processed_signal/WESAD/400_4s_step_2s_spliter.pkl'
         self.model = model
 
         self.pretrain = pretrain
