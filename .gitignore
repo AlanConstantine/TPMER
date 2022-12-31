@@ -12,6 +12,10 @@ data/
 *.csv
 *.json
 conformer/
+old_run.py
+
+WESAD/
+PPGFieldStudyDataset/
 
 info.txt
 
@@ -19,6 +23,9 @@ info.txt
 HKU956/
 output/
 datasets/
+AffectiveROAD_Data/
+PPGFieldStudyDataset/
+WESAD/
 *torchviz*
 
 # Byte-compiled / optimized / DLL files
