@@ -123,7 +123,7 @@ class SignalEmbedding(nn.Module):
 
 
 class SigRepSimple(nn.Module):
-    def __init__(self, output_size=40):
+    def __init__(self):
         super().__init__()
 
         self.output_size = 40
