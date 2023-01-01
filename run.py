@@ -297,6 +297,7 @@ def main():
     if not args.debug:
         args.save_results(results=args.results)
 
+    print(args.save_path)
     avg_res = []
     for fold in args.results.keys():
         print('Fold', fold, 'best result:',
