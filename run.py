@@ -289,12 +289,22 @@ def main():
             'best_result': best_result,
             'time_used': time_used
         }
+        print()
         print('[Used time: {}s]'.format(round(time_used), 4))
 
         if args.debug:
             break
     if not args.debug:
         args.save_results(results=args.results)
+
+    print(args.save_path)
+    avg_res = []
+    for fold in args.results.keys():
+        print('Fold', fold, 'best result:',
+              args.results[fold]['best_result'], 'Time used:', args.results[fold]['time_used'])
+        avg_res.append(args.results[fold]['best_result']
+                       [list(args.results[fold]['best_result'].keys())[0]])
+    print('Avg. result: ', np.mean(avg_res))
 
 
 if __name__ == '__main__':
