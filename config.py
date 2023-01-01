@@ -12,15 +12,15 @@ import pickle
 
 class Params(object):
     def __init__(self,
-                 dataset='WES',
+                 dataset='KEC',
                  model='SG',
-                 use_cuda=False,
-                 debug=True,
+                 use_cuda=True,
+                 debug=False,
                  lr=0.0001,
                  epochs=200,
-                 valid='cv',
+                 valid='loso',
                  target='valence',
-                 batch_size=32,
+                 batch_size=16,
                  dropout=0.2,
                  out_channels=32,
                  hidden_size=64,  # lstm hidden_size
