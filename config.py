@@ -12,15 +12,15 @@ import pickle
 
 class Params(object):
     def __init__(self,
-                 dataset='WES',
+                 dataset='KEC',
                  model='SG',
-                 use_cuda=False,
-                 debug=True,
+                 use_cuda=True,
+                 debug=False,
                  lr=0.0001,
                  epochs=200,
-                 valid='cv',
+                 valid='loso',
                  target='valence',
-                 batch_size=32,
+                 batch_size=16,
                  dropout=0.2,
                  out_channels=32,
                  hidden_size=64,  # lstm hidden_size
@@ -44,7 +44,10 @@ class Params(object):
         self.model = model
 
         self.pretrain = pretrain
-        self.pretrain_model = r'./output/HKU956/valence_CTransformer_loso_0.0001_256_32/fold2_checkpoint.pt'
+        if self.pretrain and self.model == 'CT':
+            self.pretrain_model = r'./output/HKU956/valence_CTransformer_loso_0.0001_256_32/fold2_checkpoint.pt'
+        elif self.pretrain_model and self.model == 'SG':
+            self.pretrain_model = r'./output/False_WES_valence_SG_loso_0.0001_512_32/fold4_checkpoint.pt'
 
         self.show_wei = show_wei
         self.use_cuda = use_cuda

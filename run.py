@@ -220,21 +220,30 @@ def train_model(args, net, optimizer, scheduler, loss_fn, metrics_dict,
 def run(train_dataloader, test_dataloader, args):
     model = None
     if args.pretrain:
-        model = CNNTransformer.CTransformer(args)
-        model.load_state_dict(torch.load(args.pretrain_model))
-        model.fcn = args.fcn
-    elif args.model == 'CL':  # CNN+BiLSTM
-        model = CNNBiLSTM.CNNBiLSTM(args)
-    elif args.model == 'CT':  # CNN+Transformer
-        model = CNNTransformer.CTransformer(args)
-    elif args.model == 'LS':  # BiLSTM
-        model = CNNTransformer.CTransformer(args)
-    elif args.model == 'TF':  # Transformer
-        model = CNNTransformer.CTransformer(args)
-    elif args.model == 'SG':  # SigRep
-        model = SigRep.SigRepSimple(args)
+        if args.model == 'CT':
+            model = CNNTransformer.CTransformer(args)
+            model.load_state_dict(torch.load(args.pretrain_model))
+            model.fcn = args.fcn
+        if args.model == 'SG':
+            model = SigRep.SigRepSimple(args)
+            model.load_state_dict(torch.load(args.pretrain_model))
+            model.fcn = nn.Sequential(
+                nn.Linear(40 * 4, 16), nn.ReLU(),
+                nn.Linear(16, 8), nn.ReLU(), nn.Dropout(p=args.dropout))
+            model.regressor = nn.Linear(8, 1)
     else:
-        pass
+        if args.model == 'CL':  # CNN+BiLSTM
+            model = CNNBiLSTM.CNNBiLSTM(args)
+        elif args.model == 'CT':  # CNN+Transformer
+            model = CNNTransformer.CTransformer(args)
+        elif args.model == 'LS':  # BiLSTM
+            model = CNNTransformer.CTransformer(args)
+        elif args.model == 'TF':  # Transformer
+            model = CNNTransformer.CTransformer(args)
+        elif args.model == 'SG':  # SigRep
+            model = SigRep.SigRepSimple(args)
+        else:
+            pass
     model = model.to(args.device)
     loss_fn = nn.BCEWithLogitsLoss()
     mode = 'max'
