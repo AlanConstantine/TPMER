@@ -58,7 +58,7 @@ class Inception(nn.Module):
 
 
 class SignalEncoder(nn.Module):
-    def __init__(self, output_size, seq=400):
+    def __init__(self, output_size, dropout, seq=400):
         super().__init__()
 
         self.seq = seq
@@ -73,8 +73,9 @@ class SignalEncoder(nn.Module):
         self.maxpool1 = nn.MaxPool1d(kernel_size=2)
         self.maxpool2 = nn.MaxPool1d(kernel_size=2)
         self.maxpool3 = nn.MaxPool1d(kernel_size=2)
-        # self.maxpool4 = nn.MaxPool1d(kernel_size=2)
-        self.fcn = nn.Linear(seq, self.output_size)
+
+        self.fcn = nn.Sequential(nn.Dropout(p=dropout),
+                                 nn.Linear(seq, self.output_size))
 
     def forward(self, x):
         x = self.inception1(x)
@@ -95,15 +96,15 @@ class SignalEncoder(nn.Module):
 
 
 class SignalEmbedding(nn.Module):
-    def __init__(self, output_size, seq=400):
+    def __init__(self, output_size, dropout=0.2, seq=400):
         super().__init__()
 
         self.seq = seq
 
-        self.bvp_encoder = SignalEncoder(output_size)
-        self.eda_encoder = SignalEncoder(output_size)
-        self.temp_encoder = SignalEncoder(output_size)
-        self.hr_encoder = SignalEncoder(output_size)
+        self.bvp_encoder = SignalEncoder(output_size, dropout)
+        self.eda_encoder = SignalEncoder(output_size, dropout)
+        self.temp_encoder = SignalEncoder(output_size, dropout)
+        self.hr_encoder = SignalEncoder(output_size, dropout)
 
     def forward(self, x):
 
@@ -131,10 +132,12 @@ class SigRepSimple(nn.Module):
         self.output_size = 40
         # self.n_class = n_class
 
-        self.signal_embedd = SignalEmbedding(output_size=self.output_size)
+        self.signal_embedd = SignalEmbedding(
+            output_size=self.output_size, dropout=args.dropout)
 
         self.fcn = nn.Sequential(
-            nn.Linear(self.output_size * 4, 16), nn.Linear(16, 8), nn.ReLU())
+            nn.Linear(self.output_size * 4, 16), nn.ReLU(),
+            nn.Linear(16, 8), nn.ReLU(), nn.Dropout(p=args.dropout))
 
         # self.classifier = nn.Linear(8, self.n_class)
         self.regressor = nn.Linear(8, 1)
