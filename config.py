@@ -44,7 +44,10 @@ class Params(object):
         self.model = model
 
         self.pretrain = pretrain
-        self.pretrain_model = r'./output/HKU956/valence_CTransformer_loso_0.0001_256_32/fold2_checkpoint.pt'
+        if self.pretrain and self.model == 'CT':
+            self.pretrain_model = r'./output/HKU956/valence_CTransformer_loso_0.0001_256_32/fold2_checkpoint.pt'
+        elif self.pretrain_model and self.model == 'SG':
+            self.pretrain_model = r'./output/False_WES_valence_SG_loso_0.0001_512_32/fold4_checkpoint.pt'
 
         self.show_wei = show_wei
         self.use_cuda = use_cuda

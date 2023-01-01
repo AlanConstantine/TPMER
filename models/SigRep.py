@@ -139,7 +139,6 @@ class SigRepSimple(nn.Module):
             nn.Linear(self.output_size * 4, 16), nn.ReLU(),
             nn.Linear(16, 8), nn.ReLU(), nn.Dropout(p=args.dropout))
 
-        # self.classifier = nn.Linear(8, self.n_class)
         self.regressor = nn.Linear(8, 1)
 
     def forward(self, x):
