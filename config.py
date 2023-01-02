@@ -12,7 +12,7 @@ import pickle
 
 class Params(object):
     def __init__(self,
-                 dataset='KEC',
+                 dataset='HKU',
                  model='SG',
                  use_cuda=True,
                  debug=False,
@@ -20,7 +20,7 @@ class Params(object):
                  epochs=200,
                  valid='loso',
                  target='valence',
-                 batch_size=16,
+                 batch_size=256,
                  dropout=0.2,
                  out_channels=32,
                  hidden_size=64,  # lstm hidden_size
@@ -30,7 +30,7 @@ class Params(object):
                  fcn_input=12608,  # Transformer fcn num
                  init=True,
                  show_wei=False,
-                 pretrain=False
+                 pretrain=True
                  ):
 
         self.data = r'./processed_signal/HKU956/400_4s_step_2s.pkl'
@@ -44,9 +44,10 @@ class Params(object):
         self.model = model
 
         self.pretrain = pretrain
+        self.pretrain_model = ''
         if self.pretrain and self.model == 'CT':
             self.pretrain_model = r'./output/HKU956/valence_CTransformer_loso_0.0001_256_32/fold2_checkpoint.pt'
-        elif self.pretrain_model and self.model == 'SG':
+        elif self.pretrain and self.model == 'SG':
             self.pretrain_model = r'./output/False_WES_valence_SG_loso_0.0001_512_32/fold4_checkpoint.pt'
 
         self.show_wei = show_wei
