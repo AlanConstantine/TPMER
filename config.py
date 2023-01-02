@@ -8,6 +8,7 @@ import torch
 from torch import nn
 import os
 import pickle
+import time
 
 
 class Params(object):
@@ -85,9 +86,9 @@ class Params(object):
                 # 'auc': AUC().to(self.device)
             }
 
-        self.save_path = './output/{}_{}_{}_{}_{}_{}_{}_{}'.format(
+        self.save_path = './output/{}_{}_{}_{}_{}_{}_{}_{}_{}'.format(
             self.pretrain, dataset, target, model, valid, lr, batch_size,
-            out_channels)
+            out_channels, int(time.time()))
         self.k = None
         self.results = {}
         if not self.debug:
