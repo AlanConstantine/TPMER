@@ -11,36 +11,37 @@ import pickle
 
 
 class Params(object):
-    def __init__(self,
-                 dataset='HKU',
-                 model='SG',
-                 use_cuda=True,
-                 debug=False,
-                 lr=0.0001,
-                 epochs=200,
-                 valid='loso',
-                 target='valence',
-                 batch_size=256,
-                 dropout=0.2,
-                 out_channels=32,
-                 hidden_size=64,  # lstm hidden_size
-                 nlayers=2,  # transformer or lstm layer num
-                 nhead=4,  # transformer head num
-                 #  fcn_input=50432,  # LSTM fcn num
-                 fcn_input=12608,  # Transformer fcn num
-                 init=True,
-                 show_wei=False,
-                 pretrain=True
-                 ):
+
+    def __init__(
+            self,
+            dataset='HKU',
+            model='SG',
+            use_cuda=True,
+            debug=False,
+            lr=0.0001,
+            epochs=200,
+            valid='loso',
+            target='valence',
+            batch_size=256,
+            dropout=0.2,
+            out_channels=32,
+            hidden_size=64,  # lstm hidden_size
+            nlayers=2,  # transformer or lstm layer num
+            nhead=4,  # transformer head num
+            #  fcn_input=50432,  # LSTM fcn num
+        fcn_input=12608,  # Transformer fcn num
+            init=True,
+            show_wei=False,
+            pretrain=True):
 
         self.data = r'./processed_signal/HKU956/400_4s_step_2s.pkl'
-        self.spliter = r'./processed_signal/HKU956/400_4s_step_2s_spliter.pkl'
+        self.spliter = r'./processed_signal/HKU956/400_4s_step_2s_spliter10.pkl'
         if dataset == 'KEC':
             self.data = r'./processed_signal/KEmoCon/KEC_400.pkl'
-            self.spliter = r'./processed_signal/KEmoCon/KEC_400_spliter.pkl'
+            self.spliter = r'./processed_signal/KEmoCon/KEC_400_spliter10.pkl'
         if dataset == 'WES':
             self.data = r'./processed_signal/WESAD/400_4s_step_2s.pkl'
-            self.spliter = r'./processed_signal/WESAD/400_4s_step_2s_spliter.pkl'
+            self.spliter = r'./processed_signal/WESAD/400_4s_step_2s_spliter10.pkl'
         self.model = model
 
         self.pretrain = pretrain
@@ -78,27 +79,24 @@ class Params(object):
         if self.target in ['valence', 'arousal']:
             self.metrics_dict = {'mse': MeanSquaredError().to(self.device)}
         else:
-            self.metrics_dict = {'f1': F1Score().to(self.device),
-                                 'acc':  Accuracy().to(self.device),
-                                 # 'auc': AUC().to(self.device)
-                                 }
+            self.metrics_dict = {
+                'f1': F1Score().to(self.device),
+                'acc': Accuracy().to(self.device),
+                # 'auc': AUC().to(self.device)
+            }
 
         self.save_path = './output/{}_{}_{}_{}_{}_{}_{}_{}'.format(
-            self.pretrain, dataset, target, model, valid, lr, batch_size, out_channels)
+            self.pretrain, dataset, target, model, valid, lr, batch_size,
+            out_channels)
         self.k = None
         self.results = {}
         if not self.debug:
             self.create_log_folder()
 
-        self.fcn = nn.Sequential(
-            nn.Dropout(p=0.2),
-            nn.Linear(self.fcn_input, 128),
-            nn.ReLU(),
-            nn.Dropout(p=0.2),
-            nn.Linear(128, 32),
-            nn.ReLU(),
-            nn.Linear(32, 1)
-        )
+        self.fcn = nn.Sequential(nn.Dropout(p=0.2),
+                                 nn.Linear(self.fcn_input, 128), nn.ReLU(),
+                                 nn.Dropout(p=0.2), nn.Linear(128, 32),
+                                 nn.ReLU(), nn.Linear(32, 1))
 
     def create_log_folder(self):
         if not os.path.exists(r'./output'):
