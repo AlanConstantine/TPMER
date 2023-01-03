@@ -5,9 +5,11 @@
 import torch
 from torch import nn
 import torch.nn.functional as F
+from torch.nn import TransformerEncoder, TransformerEncoderLayer
 
 
 class BasicConv1d(nn.Module):
+
     def __init__(self, in_channels: int, out_channels: int, **kwargs):
         super().__init__()
         self.conv = nn.Conv1d(in_channels, out_channels, **kwargs)
@@ -20,19 +22,28 @@ class BasicConv1d(nn.Module):
 
 
 class Inception(nn.Module):
+
     def __init__(self, in_channel, seq=400):
         super().__init__()
 
         self.seq = seq
 
-        self.branch1 = nn.Sequential(BasicConv1d(in_channel, in_channel, kernel_size=1, stride=1),
-                                     BasicConv1d(in_channel, in_channel, kernel_size=1, stride=1),)
-        self.branch2 = nn.Sequential(BasicConv1d(in_channel, in_channel, kernel_size=3, stride=1),
-                                     BasicConv1d(in_channel, in_channel, kernel_size=3, stride=1),)
-        self.branch3 = nn.Sequential(BasicConv1d(in_channel, in_channel, kernel_size=5, stride=1),
-                                     BasicConv1d(in_channel, in_channel, kernel_size=5, stride=1),)
-        self.branch4 = nn.Sequential(BasicConv1d(in_channel, in_channel, kernel_size=7, stride=1),
-                                     BasicConv1d(in_channel, in_channel, kernel_size=7, stride=1),)
+        self.branch1 = nn.Sequential(
+            BasicConv1d(in_channel, in_channel, kernel_size=1, stride=1),
+            BasicConv1d(in_channel, in_channel, kernel_size=1, stride=1),
+        )
+        self.branch2 = nn.Sequential(
+            BasicConv1d(in_channel, in_channel, kernel_size=3, stride=1),
+            BasicConv1d(in_channel, in_channel, kernel_size=3, stride=1),
+        )
+        self.branch3 = nn.Sequential(
+            BasicConv1d(in_channel, in_channel, kernel_size=5, stride=1),
+            BasicConv1d(in_channel, in_channel, kernel_size=5, stride=1),
+        )
+        self.branch4 = nn.Sequential(
+            BasicConv1d(in_channel, in_channel, kernel_size=7, stride=1),
+            BasicConv1d(in_channel, in_channel, kernel_size=7, stride=1),
+        )
         self.branch5 = nn.Sequential(nn.MaxPool1d(kernel_size=3, stride=1),
                                      nn.ReLU())
 
@@ -58,6 +69,7 @@ class Inception(nn.Module):
 
 
 class SignalEncoder(nn.Module):
+
     def __init__(self, output_size, dropout, seq=400):
         super().__init__()
 
@@ -96,6 +108,7 @@ class SignalEncoder(nn.Module):
 
 
 class SignalEmbedding(nn.Module):
+
     def __init__(self, output_size, dropout=0.2, seq=400):
         super().__init__()
 
@@ -124,6 +137,7 @@ class SignalEmbedding(nn.Module):
 
 
 class SigRepSimple(nn.Module):
+
     def __init__(self, args):
         super().__init__()
 
@@ -132,12 +146,12 @@ class SigRepSimple(nn.Module):
         self.output_size = 40
         # self.n_class = n_class
 
-        self.signal_embedd = SignalEmbedding(
-            output_size=self.output_size, dropout=args.dropout)
+        self.signal_embedd = SignalEmbedding(output_size=self.output_size,
+                                             dropout=args.dropout)
 
-        self.fcn = nn.Sequential(
-            nn.Linear(self.output_size * 4, 16), nn.ReLU(),
-            nn.Linear(16, 8), nn.ReLU(), nn.Dropout(p=args.dropout))
+        self.fcn = nn.Sequential(nn.Linear(self.output_size * 4, 16),
+                                 nn.ReLU(), nn.Linear(16, 8), nn.ReLU(),
+                                 nn.Dropout(p=args.dropout))
 
         self.regressor = nn.Linear(8, 1)
 
