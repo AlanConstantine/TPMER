@@ -148,7 +148,7 @@ class SignalEncoder(nn.Module):
         return output
 
 
-class EnconderDecoder(nn.Module):
+class SignalRepresentation(nn.Module):
     def __init__(self, output_size) -> None:
         super().__init__()
 
