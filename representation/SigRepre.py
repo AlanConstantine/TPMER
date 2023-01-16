@@ -116,7 +116,7 @@ class InceptionTransformer(nn.Module):
 
         x = x.permute(2, 0, 1)  # permute to [seq_len, batch_size, channels]
 
-        # x = self.position_encoder(x)
+        # x = self.position_encoder(x) # ablation experiment
         x = self.transformer(x)  # output [seq_len, batch_size, channels]
         # permute to [batch_size, channels, seq_len]
         output = x.permute(1, 2, 0)
@@ -134,6 +134,7 @@ class SignalEncoder(nn.Module):
         self.inception1 = InceptionTransformer(in_channel=1)
         self.inception2 = InceptionTransformer(in_channel=4)
         self.inception3 = InceptionTransformer(in_channel=16)
+        self.inception4 = InceptionTransformer(in_channel=64)
 
         self.fcn = nn.Sequential(nn.Dropout(p=dropout),
                                  nn.Linear(50, self.output_size),)
@@ -148,20 +149,42 @@ class SignalEncoder(nn.Module):
         return output
 
 
-class SignalRepresentation(nn.Module):
-    def __init__(self, output_size) -> None:
+class MultiSignalRepresentation(nn.Module):
+
+    def __init__(self, output_size, dropout=0.2, seq=400):
         super().__init__()
 
+        self.seq = seq
+
         self.output_size = output_size
-        self.encoder = SignalEncoder(output_size=self.output_size, dropout=0.2)
+
+        self.bvp_encoder = SignalEncoder(self.output_size, dropout)
+        self.eda_encoder = SignalEncoder(self.output_size, dropout)
+        self.temp_encoder = SignalEncoder(self.output_size, dropout)
+        self.hr_encoder = SignalEncoder(self.output_size, dropout)
+
         self.decoder = TransformerDecoderLayer(
-            d_model=1, nhead=1, dropout=0.2, batch_first=True)
+            d_model=4, nhead=4, dropout=0.2, batch_first=True)
 
-    def forwad(self, x, target):
-        x = self.encoder(x)  # output: [batch_size, seq_len]
-        # output: [batch_size, channels, seq_len]
-        x = x.reshape(-1, 1, self.output_size)
-        x = x.permute(0, 2, 1)  # output: [batch_size, seq_len, channels]
-        output = self.decoder(target, x)
+    def forward(self, x, tgt):
 
-        return output
+        bvp = x[:, 0, :].reshape(-1, 1, self.seq)
+        eda = x[:, 1, :].reshape(-1, 1, self.seq)
+        temp = x[:, 2, :].reshape(-1, 1, self.seq)
+        hr = x[:, 3, :].reshape(-1, 1, self.seq)
+
+        bvp_encoder = self.bvp_encoder(bvp)
+        eda_encoder = self.eda_encoder(eda)
+        temp_encoder = self.temp_encoder(temp)
+        hr_encoder = self.hr_encoder(hr)
+
+        outputs = [bvp_encoder, eda_encoder, temp_encoder, hr_encoder]
+
+        # output: [batch_size, feature, seq_len]
+        encoder_outputs = torch.stack(outputs, 1)
+        # output: [batch_size, seq_len, channels]
+        encoder_outputs = encoder_outputs.permute(0, 2, 1)
+        tgt = tgt.permute(0, 2, 1)
+        output = self.decoder(tgt, encoder_outputs)
+
+        return output.permute(0, 2, 1)
