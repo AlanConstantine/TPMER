@@ -178,13 +178,17 @@ class MultiSignalRepresentation(nn.Module):
         temp_encoder = self.temp_encoder(temp)
         hr_encoder = self.hr_encoder(hr)
 
+        # output: [batch_size, feature, seq_len]
         outputs = [bvp_encoder, eda_encoder, temp_encoder, hr_encoder]
 
-        # output: [batch_size, feature, seq_len]
         encoder_outputs = torch.stack(outputs, 1)
         # output: [batch_size, seq_len, channels]
-        encoder_outputs = encoder_outputs.permute(0, 2, 1)
-        tgt = tgt.permute(0, 2, 1)
-        output = self.decoder(tgt, encoder_outputs)
 
-        return output.permute(0, 2, 1)
+        encoder_outputs = encoder_outputs.permute(0, 2, 1)
+
+        tgt = tgt.permute(0, 2, 1)
+        decoder_outputs = self.decoder(tgt, encoder_outputs)
+
+        decoder_outputs = decoder_outputs.permute(0, 2, 1)
+
+        return decoder_outputs
