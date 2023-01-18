@@ -2,8 +2,8 @@
 # @Author: Alan Lau
 # @Date: 2023-01-16 15:30:02
 
-from tools import *
-from CONSTANT import *
+# from tools import *
+# from CONSTANT import *
 
 from torch.utils.data import (
     TensorDataset, DataLoader, SequentialSampler, WeightedRandomSampler)
@@ -35,6 +35,18 @@ def init_xavier(m):
         nn.init.xavier_normal_(m.weight)
 
 
+class DataPrepare(object):
+    def __init__(self, datapath=r'../processed_signal/all_400_4s_step_2s.pkl') -> None:
+        self.df = pd.read_pickle(datapath)
+        # del self.df['participant_id'], self.df['source']
+
+    def randomization(self):
+        self.df = self.df.sample(frac=1)
+
+    def drop_columns(self):
+        pass
+
+
 def train():
     pass
 
@@ -48,7 +60,8 @@ def run():
 
 
 def main():
-    pass
+
+    print(data.shape)
 
 
 if __name__ == '__main__':
