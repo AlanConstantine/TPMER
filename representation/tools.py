@@ -9,6 +9,7 @@ import torch
 from torch.utils.data import (
     TensorDataset, DataLoader, SequentialSampler, RandomSampler)
 from sklearn.model_selection import train_test_split
+torch.manual_seed(3407)
 
 
 def concat_signals(df):
@@ -37,12 +38,12 @@ class DataPrepare(object):
         self.df = pd.read_pickle(datapath)
         self.drop_columns()
         self.randomization()
-        print('Data size:', self.data.shape)
+        print('Data size:', self.df.shape)
 
         X = concat_signals(self.df)
 
         X_train, X_test = train_test_split(
-            X, test_size=0.2, random_state=3131, shuffle=True)
+            X, test_size=0.2, random_state=3407, shuffle=True)
 
         if self.args.debug:
             X_train, X_test = X_train[:1000], X_test[:100]
@@ -58,7 +59,7 @@ class DataPrepare(object):
         print('Splited size:', X_train.shape, X_test.shape)
 
     def randomization(self):
-        print('Data shuffle')
+        print('Data shuffled')
         self.df = self.df.sample(frac=1)
 
     def drop_columns(self):
