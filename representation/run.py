@@ -8,6 +8,8 @@
 from param import Params
 from tools import *
 
+from SigRepre import MultiSignalRepresentation
+
 
 from torch.nn import TransformerEncoder, TransformerEncoderLayer
 from torch.optim.lr_scheduler import StepLR, ReduceLROnPlateau
@@ -51,6 +53,8 @@ def main():
     args = Params()
     dataprepare = DataPrepare(args)
     train_dataloader, test_dataloader = dataprepare.get_data()
+
+    model = MultiSignalRepresentation(output_size=40)
 
 
 if __name__ == '__main__':
