@@ -153,6 +153,7 @@ class MultiEncoder(nn.Module):
     def __init__(self, output_size, dropout=0.2) -> None:
         super().__init__()
         pass
+########
 
 
 class MultiSignalRepresentation(nn.Module):
