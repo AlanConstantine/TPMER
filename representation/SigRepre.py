@@ -150,17 +150,8 @@ class SignalEncoder(nn.Module):
 
 
 class MultiEncoder(nn.Module):
-    def __init__(self, output_size, dropout=0.2) -> None:
+    def __init__(self, output_size, dropout=0.2, seq=400) -> None:
         super().__init__()
-        pass
-########
-
-
-class MultiSignalRepresentation(nn.Module):
-
-    def __init__(self, output_size, dropout=0.2, seq=400):
-        super().__init__()
-
         self.seq = seq
 
         self.output_size = output_size
@@ -170,11 +161,7 @@ class MultiSignalRepresentation(nn.Module):
         self.temp_encoder = SignalEncoder(self.output_size, dropout)
         self.hr_encoder = SignalEncoder(self.output_size, dropout)
 
-        self.decoder = TransformerDecoderLayer(
-            d_model=4, nhead=4, dropout=0.2, batch_first=True)
-
-    def forward(self, x, tgt):
-
+    def forward(self, x):
         bvp = x[:, 0, :].reshape(-1, 1, self.seq)
         eda = x[:, 1, :].reshape(-1, 1, self.seq)
         temp = x[:, 2, :].reshape(-1, 1, self.seq)
@@ -193,6 +180,30 @@ class MultiSignalRepresentation(nn.Module):
 
         encoder_outputs = encoder_outputs.permute(0, 2, 1)
 
+        return encoder_outputs
+
+
+class MultiSignalRepresentation(nn.Module):
+
+    def __init__(self, output_size, dropout=0.2, seq=400):
+        super().__init__()
+
+        self.seq = seq
+
+        self.output_size = output_size
+
+        # self.bvp_encoder = SignalEncoder(self.output_size, dropout)
+        # self.eda_encoder = SignalEncoder(self.output_size, dropout)
+        # self.temp_encoder = SignalEncoder(self.output_size, dropout)
+        # self.hr_encoder = SignalEncoder(self.output_size, dropout)
+
+        self.encoder = MultiEncoder(output_size=self.output_size, seq=self.seq)
+
+        self.decoder = TransformerDecoderLayer(
+            d_model=4, nhead=4, dropout=0.2, batch_first=True)
+
+    def forward(self, x, tgt):
+        encoder_outputs = self.encoder(x)
         tgt = tgt.permute(0, 2, 1)
         decoder_outputs = self.decoder(tgt, encoder_outputs)
 
