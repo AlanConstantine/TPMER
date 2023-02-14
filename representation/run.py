@@ -55,6 +55,14 @@ def main():
     train_dataloader, test_dataloader = dataprepare.get_data()
 
     model = MultiSignalRepresentation(output_size=40)
+    model = model.to(args.device)
+
+    loss_fn = nn.MSELoss()
+    optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr)
+    scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=5,
+                                  verbose=True, threshold_mode='rel',
+                                  cooldown=0, min_lr=0, eps=1e-08
+                                  )
 
 
 if __name__ == '__main__':
