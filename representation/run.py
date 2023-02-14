@@ -46,9 +46,21 @@ def train(args, model, optimizer, scheduler, loss_fn, train_dataloader):
     for i, batch in loop:
         preds = model(batch)
 
+        if optimizer:
+            optimizer.zero_grad()
 
-def eval():
-    pass
+        loss = loss_fn(preds, batch)
+
+        loss.backforward()
+        optimizer.step()
+
+    return loss.item()
+
+
+def eval(args, model, optimizer, scheduler, loss_fn, test_dataloader):
+    model.eval()
+    preds = model()
+    loss = loss_fn(preds, batch)
 
 
 def run(args, model, optimizer, scheduler, loss_fn, train_dataloader, test_dataloader):
