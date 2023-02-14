@@ -37,16 +37,29 @@ def init_xavier(m):
         nn.init.xavier_normal_(m.weight)
 
 
-def train():
-    pass
+def train(args, model, optimizer, scheduler, loss_fn, train_dataloader):
+    model.train()
+
+    loop = tqdm(enumerate(train_dataloader), total=len(
+            train_dataloader), file=sys.stdout)
+
+    for i, batch in loop:
+        preds = model(batch)
 
 
 def eval():
     pass
 
 
-def run():
-    pass
+def run(args, model, optimizer, scheduler, loss_fn, train_dataloader, test_dataloader):
+    history = {}
+
+    if args.init:
+        model.apply(init_xavier)
+
+    model = train(args, model, optimizer, scheduler, loss_fn, train_dataloader)
+
+    return history
 
 
 def main():
@@ -63,6 +76,8 @@ def main():
                                   verbose=True, threshold_mode='rel',
                                   cooldown=0, min_lr=0, eps=1e-08
                                   )
+
+    run(args, model, optimizer, scheduler, loss_fn, train_dataloader, test_dataloader)
 
 
 if __name__ == '__main__':
