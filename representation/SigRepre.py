@@ -2,6 +2,7 @@
 from tools import *
 import pandas as pd
 import numpy as np
+from copy import deepcopy
 from torch.utils.data import (
     TensorDataset, DataLoader, SequentialSampler, WeightedRandomSampler)
 
@@ -185,13 +186,13 @@ class MultiEncoder(nn.Module):
 
 class MultiSignalRepresentation(nn.Module):
 
-    def __init__(self, output_size, dropout=0.2, seq=400):
+    def __init__(self, output_size, dropout=0.2, seq=400, maskp=0.5, device=torch.device("cuda")):
         super().__init__()
 
         self.seq = seq
-
         self.output_size = output_size
-
+        self.maskp = maskp
+        self.device = device
         # self.bvp_encoder = SignalEncoder(self.output_size, dropout)
         # self.eda_encoder = SignalEncoder(self.output_size, dropout)
         # self.temp_encoder = SignalEncoder(self.output_size, dropout)
@@ -204,7 +205,14 @@ class MultiSignalRepresentation(nn.Module):
 
     def forward(self, x, tgt):
         encoder_outputs = self.encoder(x)
+        print(tgt)
+
+        mask = (torch.rand((tgt.shape[0], 4, 400), device=self.device)
+                < self.maskp).int()
+
+        tgt = tgt * mask
         tgt = tgt.permute(0, 2, 1)
+
         decoder_outputs = self.decoder(tgt, encoder_outputs)
 
         decoder_outputs = decoder_outputs.permute(0, 2, 1)
