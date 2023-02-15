@@ -41,7 +41,7 @@ def train(args, model, optimizer, scheduler, loss_fn, train_dataloader):
     model.train()
 
     loop = tqdm(enumerate(train_dataloader), total=len(
-            train_dataloader), file=sys.stdout)
+        train_dataloader), file=sys.stdout)
 
     for i, batch in loop:
         preds = model(batch)
@@ -60,7 +60,7 @@ def train(args, model, optimizer, scheduler, loss_fn, train_dataloader):
 def eval(args, model, optimizer, scheduler, loss_fn, test_dataloader):
     model.eval()
     preds = model()
-    loss = loss_fn(preds, batch)
+    # loss = loss_fn(preds, batch)
 
 
 def run(args, model, optimizer, scheduler, loss_fn, train_dataloader, test_dataloader):
@@ -89,7 +89,8 @@ def main():
                                   cooldown=0, min_lr=0, eps=1e-08
                                   )
 
-    run(args, model, optimizer, scheduler, loss_fn, train_dataloader, test_dataloader)
+    run(args, model, optimizer, scheduler,
+        loss_fn, train_dataloader, test_dataloader)
 
 
 if __name__ == '__main__':
