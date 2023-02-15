@@ -40,6 +40,8 @@ def init_xavier(m):
 def train(args, model, optimizer, scheduler, loss_fn, train_dataloader):
     model.train()
 
+    total_loss = 0
+
     loop = tqdm(enumerate(train_dataloader), total=len(
         train_dataloader), file=sys.stdout)
 
@@ -54,7 +56,9 @@ def train(args, model, optimizer, scheduler, loss_fn, train_dataloader):
         loss.backforward()
         optimizer.step()
 
-    return loss.item()
+        total_loss += loss.item()
+
+    # return loss.item()
 
 
 def eval(args, model, optimizer, scheduler, loss_fn, test_dataloader):
