@@ -7,6 +7,7 @@ from tqdm import tqdm
 import numpy as np
 import pandas as pd
 import torch
+import datetime
 from torch.utils.data import (TensorDataset, DataLoader, SequentialSampler,
                               RandomSampler)
 from sklearn.model_selection import train_test_split
@@ -91,6 +92,12 @@ class DataPrepare(object):
                                      drop_last=False)
 
         return train_dataloader, test_dataloader
+
+
+def printlog(info):
+    nowtime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    print("\n" + "======" * 6 + "[%s]" % nowtime + "======" * 6)
+    print(str(info) + "\n")
 
 
 class StepRunner:
@@ -178,5 +185,23 @@ class EpochRunner:
             step_log = {}
             if len(step_metrics) != 0:
                 step_log = dict({self.stage + "_loss": loss}, **step_metrics)
+                for metric_name, scores in step_metrics.items():
+                    epoch_metrics[metric_name] += scores
             total_loss += loss
             step += 1
+
+            if i != len(dataloader) - 1:
+                loop.set_postfix(**step_log)
+            else:
+                epoch_loss = total_loss / step
+                if len(step_metrics) != 0:
+                    for metric_name, scores in step_metrics.items():
+                        epoch_metrics[metric_name] = round(
+                            epoch_metrics[metric_name] / step, 4)
+                epoch_log = dict({self.stage + "_loss": epoch_loss},
+                                 **epoch_metrics)
+                loop.set_postfix(**epoch_log)
+
+        epoch_log.update(epoch_metrics)
+
+        return epoch_log
