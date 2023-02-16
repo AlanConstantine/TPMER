@@ -183,6 +183,8 @@ class EpochRunner:
                     file=sys.stdout)
 
         for i, batch in loop:
+            print(len(batch))
+            print('lllllllllll')
             loss, step_metrics = self.steprunner(*batch)
             step_log = {}
             if len(step_metrics) != 0:

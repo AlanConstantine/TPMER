@@ -55,8 +55,8 @@ def run(args,
         model.apply(init_xavier)
 
     for epoch in range(1, args.epochs + 1):
-        printlog("[Fold {0}] Epoch {1} / {2}".format(args.k, epoch,
-                                                     args.epochs))
+        printlog("Epoch {0} / {1}".format(epoch,
+                                          args.epochs))
         # training -------------------------------------------------
         train_step_runner = StepRunner(model=model,
                                        loss_fn=loss_fn,
@@ -70,7 +70,7 @@ def run(args,
         for name, metric in train_metrics.items():
             history[name] = history.get(name, []) + [metric]
 
-        # validate
+        # validate -------------------------------------------------
         if val_data:
             val_step_runner = StepRunner(model=model,
                                          loss_fn=loss_fn,
