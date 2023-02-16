@@ -42,6 +42,8 @@ class DataPrepare(object):
             args,
             datapath=r'../processed_signal/all_400_4s_step_2s.pkl') -> None:
         self.args = args
+        if self.args.debug:
+            datapath = r'../processed_signal/all_sample.pkl'
         self.df = pd.read_pickle(datapath)
         self.drop_columns()
         self.randomization()

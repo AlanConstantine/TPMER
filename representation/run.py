@@ -2,7 +2,6 @@
 # @Author: Alan Lau
 # @Date: 2023-01-16 15:30:02
 
-# from tools import *
 # from CONSTANT import *
 
 from param import Params
@@ -80,7 +79,7 @@ def run(args,
             val_epoch_runner = EpochRunner(val_step_runner, args.metrics)
             with torch.no_grad():
                 val_metrics = val_epoch_runner(val_data)
-            vla_metrics["epoch"] = epoch
+            val_metrics["epoch"] = epoch
             for metric_name, metric in val_metrics.items():
                 history[metric_name] = history.get(metric_name, []) + [metric]
 
@@ -108,19 +107,8 @@ def run(args,
     return history, {monitor: best_result}
 
 
-# def run(args, model, optimizer, scheduler, loss_fn, train_dataloader,
-#         test_dataloader):
-#     history = {}
-
-#     if args.init:
-#         model.apply(init_xavier)
-
-#     model = train(args, model, optimizer, scheduler, loss_fn, train_dataloader)
-
-#     return history
-
-
 def main():
+    st = time.time()
     args = Params()
     dataprepare = DataPrepare(args)
     train_dataloader, test_dataloader = dataprepare.get_data()
@@ -140,8 +128,24 @@ def main():
                                   min_lr=0,
                                   eps=1e-08)
 
-    run(args, model, optimizer, scheduler, loss_fn, train_dataloader,
-        test_dataloader)
+    history_df, best_result = run(args,
+                                  model,
+                                  optimizer,
+                                  scheduler,
+                                  loss_fn,
+                                  patience=24,
+                                  train_data=train_dataloader,
+                                  val_data=test_dataloader)
+    time_used = time.time() - st
+    print()
+    print(best_result)
+    print('[Used time: {}s]'.format(round(time_used), 4))
+    if not args.debug:
+        args.save_results(results=args.results)
+        history_df.to_csv(
+            os.path.join(args.save_path, 'history_df.csv', index=False))
+
+    print(args.save_path)
 
 
 if __name__ == '__main__':
