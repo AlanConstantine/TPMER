@@ -10,7 +10,6 @@ from tools import *
 
 from SigRepre import MultiSignalRepresentation
 
-
 from torch.nn import TransformerEncoder, TransformerEncoderLayer
 from torch.optim.lr_scheduler import StepLR, ReduceLROnPlateau
 
@@ -26,8 +25,8 @@ import sys
 import time
 import warnings
 from copy import deepcopy
-warnings.filterwarnings('ignore')
 
+warnings.filterwarnings('ignore')
 
 torch.manual_seed(3407)
 
@@ -42,19 +41,19 @@ def train(args, model, optimizer, scheduler, loss_fn, train_dataloader):
 
     total_loss = 0
 
-    loop = tqdm(enumerate(train_dataloader), total=len(
-        train_dataloader), file=sys.stdout)
+    loop = tqdm(enumerate(train_dataloader),
+                total=len(train_dataloader),
+                file=sys.stdout)
 
     for i, batch in loop:
         preds = model(batch)
-
-        if optimizer:
-            optimizer.zero_grad()
 
         loss = loss_fn(preds, batch)
 
         loss.backforward()
         optimizer.step()
+
+        optimizer.zero_grad()
 
         total_loss += loss.item()
 
@@ -67,7 +66,8 @@ def eval(args, model, optimizer, scheduler, loss_fn, test_dataloader):
     # loss = loss_fn(preds, batch)
 
 
-def run(args, model, optimizer, scheduler, loss_fn, train_dataloader, test_dataloader):
+def run(args, model, optimizer, scheduler, loss_fn, train_dataloader,
+        test_dataloader):
     history = {}
 
     if args.init:
@@ -88,13 +88,18 @@ def main():
 
     loss_fn = nn.MSELoss()
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr)
-    scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=5,
-                                  verbose=True, threshold_mode='rel',
-                                  cooldown=0, min_lr=0, eps=1e-08
-                                  )
+    scheduler = ReduceLROnPlateau(optimizer,
+                                  mode='min',
+                                  factor=0.5,
+                                  patience=5,
+                                  verbose=True,
+                                  threshold_mode='rel',
+                                  cooldown=0,
+                                  min_lr=0,
+                                  eps=1e-08)
 
-    run(args, model, optimizer, scheduler,
-        loss_fn, train_dataloader, test_dataloader)
+    run(args, model, optimizer, scheduler, loss_fn, train_dataloader,
+        test_dataloader)
 
 
 if __name__ == '__main__':
