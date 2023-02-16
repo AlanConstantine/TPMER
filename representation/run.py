@@ -107,8 +107,6 @@ def run(args,
     history['lr'] = lrs
     return history, {monitor: best_result}
 
-    # return loss.item()
-
 
 # def run(args, model, optimizer, scheduler, loss_fn, train_dataloader,
 #         test_dataloader):
