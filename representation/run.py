@@ -46,13 +46,11 @@ def train(args, model, optimizer, scheduler, loss_fn, train_dataloader):
                 file=sys.stdout)
 
     for i, batch in loop:
-        preds = model(batch)
-
+        preds = model(batch, batch)
         loss = loss_fn(preds, batch)
 
         loss.backforward()
         optimizer.step()
-
         optimizer.zero_grad()
 
         total_loss += loss.item()

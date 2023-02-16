@@ -2,13 +2,15 @@
 # @Author: Alan Lau
 # @Date: 2023-01-25 23:35:09
 
-
+import sys
+from tqdm import tqdm
 import numpy as np
 import pandas as pd
 import torch
-from torch.utils.data import (
-    TensorDataset, DataLoader, SequentialSampler, RandomSampler)
+from torch.utils.data import (TensorDataset, DataLoader, SequentialSampler,
+                              RandomSampler)
 from sklearn.model_selection import train_test_split
+
 torch.manual_seed(3407)
 
 
@@ -33,7 +35,11 @@ def concat_signals(df):
 
 
 class DataPrepare(object):
-    def __init__(self, args, datapath=r'../processed_signal/all_400_4s_step_2s.pkl') -> None:
+
+    def __init__(
+            self,
+            args,
+            datapath=r'../processed_signal/all_400_4s_step_2s.pkl') -> None:
         self.args = args
         self.df = pd.read_pickle(datapath)
         self.drop_columns()
@@ -42,8 +48,10 @@ class DataPrepare(object):
 
         X = concat_signals(self.df)
 
-        X_train, X_test = train_test_split(
-            X, test_size=0.2, random_state=3407, shuffle=True)
+        X_train, X_test = train_test_split(X,
+                                           test_size=0.2,
+                                           random_state=3407,
+                                           shuffle=True)
 
         if self.args.debug:
             X_train, X_test = X_train[:1000], X_test[:100]
@@ -51,8 +59,8 @@ class DataPrepare(object):
         X_train = torch.from_numpy(X_train).to(torch.float32)
         X_test = torch.from_numpy(X_test).to(torch.float32)
 
-        self.X_train, self.X_test = X_train.to(
-            self.args.device), X_test.to(self.args.device)
+        self.X_train, self.X_test = X_train.to(self.args.device), X_test.to(
+            self.args.device)
 
         self.batch_size = self.args.batch_size
 
@@ -63,8 +71,8 @@ class DataPrepare(object):
         self.df = self.df.sample(frac=1)
 
     def drop_columns(self):
-        self.df = self.df.loc[:, ~self.df.columns.isin(
-            ['participant_id', 'source'])]
+        self.df = self.df.loc[:, ~self.df.columns.
+                              isin(['participant_id', 'source'])]
 
     def get_data(self):
         train_data = TensorDataset(self.X_train)
@@ -83,3 +91,92 @@ class DataPrepare(object):
                                      drop_last=False)
 
         return train_dataloader, test_dataloader
+
+
+class StepRunner:
+
+    def __init__(self,
+                 model,
+                 loss_fn,
+                 metrics=None,
+                 stage='train',
+                 optimizer=None) -> None:
+        self.model = model
+        self.loss_fn = loss_fn
+        self.metrics = metrics
+        self.stage = stage
+        self.optimizer = optimizer
+
+    def step(self, features, labels):
+        preds = self.model(features)
+        if self.optimizer and self.stage == 'train':
+            self.optimizer.zero_grad()
+        # get loss
+        loss = self.loss_fn(preds, labels)
+        # backforward
+        if self.stage == 'train':
+            loss.backforward()
+            self.optimizer.step()
+
+        # get metrics
+        step_metrics = {}
+        if self.metrics:
+            for metric_name, metric_fn in self.metrics.items():
+                if metric_name == 'f1':
+                    step_metrics[self.stage + "_" + metric_name] = metric_fn(
+                        torch.round(self.sig(preds)).long(), labels).item()
+                elif metric_name == 'acc':
+                    step_metrics[self.stage + "_" + metric_name] = metric_fn(
+                        torch.round(preds), labels).item()
+                elif metric_name == 'auc':
+                    step_metrics[self.stage + "_" + metric_name] = metric_fn(
+                        torch.round(self.sig(preds)).long(), labels).item()
+                elif metric_name in ['rmse', 'mae']:
+                    step_metrics[self.stage + "_" + metric_name] = metric_fn(
+                        self.sig(preds), labels).item()
+        return step_metrics, loss.item()
+
+    def train_step(self, features, labels):
+        self.model.train()
+        return self.step(features, labels)
+
+    @torch.no_grad()
+    def eval_step(self, features, labels):
+        self.model.eval()
+        return self.step(features, labels)
+
+    def __call__(self, features, labels):
+        if self.stage == 'train':
+            return self.train_step(features, labels)
+        else:
+            return self.eval_step(features, labels)
+
+
+class EpochRunner:
+
+    def __init__(self, steprunner, metrics=None) -> None:
+        self.steprunner = steprunner
+        self.stage = self.steprunner.stage
+        self.metrics = metrics
+
+    def __call__(self, dataloader):
+        total_loss, step = 0, 0
+
+        epoch_metrics = {}
+        if self.metrics:
+            epoch_metrics = {
+                self.stage + '_' + name: 0
+                for name in self.metrics.keys()
+            }
+
+        loop = tqdm(enumerate(dataloader),
+                    total=len(dataloader),
+                    file=sys.stdout)
+
+        for i, batch in loop:
+            loss, step_metrics = self.steprunner(*batch)
+            step_log = {}
+            if len(step_metrics) != 0:
+                step_log = dict({self.stage + "_loss": loss}, **step_metrics)
+            total_loss += loss
+            step += 1
