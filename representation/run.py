@@ -36,44 +36,90 @@ def init_xavier(m):
         nn.init.xavier_normal_(m.weight)
 
 
-def train(args, model, optimizer, scheduler, loss_fn, train_dataloader):
-    model.train()
-
-    total_loss = 0
-
-    loop = tqdm(enumerate(train_dataloader),
-                total=len(train_dataloader),
-                file=sys.stdout)
-
-    for i, batch in loop:
-        preds = model(batch, batch)
-        loss = loss_fn(preds, batch)
-
-        loss.backforward()
-        optimizer.step()
-        optimizer.zero_grad()
-
-        total_loss += loss.item()
-
-    # return loss.item()
-
-
-def eval(args, model, optimizer, scheduler, loss_fn, test_dataloader):
-    model.eval()
-    preds = model()
-    # loss = loss_fn(preds, batch)
-
-
-def run(args, model, optimizer, scheduler, loss_fn, train_dataloader,
-        test_dataloader):
+def run(args,
+        model,
+        optimizer,
+        scheduler,
+        loss_fn,
+        train_data,
+        val_data=None,
+        ckpt_path='checkpoint.pt',
+        patience=5,
+        monitor="val_loss",
+        mode="min"):
     history = {}
+    lrs = []
+
+    best_result = None
 
     if args.init:
         model.apply(init_xavier)
 
-    model = train(args, model, optimizer, scheduler, loss_fn, train_dataloader)
+    for epoch in range(1, args.epochs + 1):
+        printlog("[Fold {0}] Epoch {1} / {2}".format(args.k, epoch,
+                                                     args.epochs))
+        # training -------------------------------------------------
+        train_step_runner = StepRunner(model=model,
+                                       loss_fn=loss_fn,
+                                       metrics=args.metrics,
+                                       stage='train',
+                                       optimizer=optimizer)
+        train_epoch_runner = EpochRunner(steprunner=train_step_runner,
+                                         metrics=args.metrics)
 
-    return history
+        train_metrics = train_epoch_runner(train_data)
+        for name, metric in train_metrics.items():
+            history[name] = history.get(name, []) + [metric]
+
+        # validate
+        if val_data:
+            val_step_runner = StepRunner(model=model,
+                                         loss_fn=loss_fn,
+                                         metrics=deepcopy(args.metrics),
+                                         stage='val')
+            val_epoch_runner = EpochRunner(val_step_runner, args.metrics)
+            with torch.no_grad():
+                val_metrics = val_epoch_runner(val_data)
+            vla_metrics["epoch"] = epoch
+            for metric_name, metric in val_metrics.items():
+                history[metric_name] = history.get(metric_name, []) + [metric]
+
+            lrs.append(optimizer.param_groups[0]['lr'])
+            scheduler.step(val_metrics['val_loss'])
+
+        arr_scores = history[monitor]
+        best_score_idx = np.argmax(arr_scores) if mode == "max" else np.argmin(
+            arr_scores)
+        if best_score_idx == len(arr_scores) - 1 and not args.debug:
+            torch.save(model.state_dict(), ckpt_path)
+            print("<<<<<< reach best {0} : {1} >>>>>>".format(
+                monitor, arr_scores[best_score_idx]))
+            best_result = arr_scores[best_score_idx]
+        if len(arr_scores) - best_score_idx > patience:
+            print(
+                "<<<<<< {} without improvement in {} epoch, early stopping >>>>>>"
+                .format(monitor, patience))
+            break
+        if not args.debug:
+            model.load_state_dict(torch.load(ckpt_path))
+
+    history = pd.DataFrame(history)
+    history['lr'] = lrs
+    return history, {monitor: best_result}
+
+    # return loss.item()
+
+
+# def run(args, model, optimizer, scheduler, loss_fn, train_dataloader,
+#         test_dataloader):
+#     history = {}
+
+#     if args.init:
+#         model.apply(init_xavier)
+
+#     model = train(args, model, optimizer, scheduler, loss_fn, train_dataloader)
+
+#     return history
 
 
 def main():
