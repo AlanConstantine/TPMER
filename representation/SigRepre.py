@@ -186,7 +186,7 @@ class MultiEncoder(nn.Module):
 
 class MultiSignalRepresentation(nn.Module):
 
-    def __init__(self, output_size, dropout=0.2, seq=400, maskp=0.5, device=torch.device("cuda")):
+    def __init__(self, output_size, dropout=0.2, seq=400, maskp=0.5, device=torch.device("cpu")):
         super().__init__()
 
         self.seq = seq
@@ -205,8 +205,6 @@ class MultiSignalRepresentation(nn.Module):
 
     def forward(self, x, tgt):
         encoder_outputs = self.encoder(x)
-        print(tgt)
-
         mask = (torch.rand((tgt.shape[0], 4, 400), device=self.device)
                 < self.maskp).int()
 
