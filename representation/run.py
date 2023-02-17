@@ -105,6 +105,7 @@ def run(args,
 
     history = pd.DataFrame(history)
     history['lr'] = lrs
+    print()
     print(history)
     return history, {monitor: best_result}
 
