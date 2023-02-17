@@ -21,7 +21,7 @@ class MERClassifer(nn.Module):
             nn.Linear(32, n_class)
         )
 
-    def forward(self, x):
+    def forward(self, x, y):
         x = x.flatten(start_dim=1)
         return self.fcn(x)
 
@@ -38,6 +38,6 @@ class MERRegressor(nn.Module):
             nn.Linear(32, 1)
         )
 
-    def forward(self, x):
+    def forward(self, x, y):
         x = x.flatten(start_dim=1)
         return self.fcn(x)
