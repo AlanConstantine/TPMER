@@ -186,17 +186,13 @@ class MultiEncoder(nn.Module):
 
 class MultiSignalRepresentation(nn.Module):
 
-    def __init__(self, output_size, dropout=0.2, seq=400, maskp=0.5, device=torch.device("cpu")):
+    def __init__(self, output_size, dropout=0.2, seq=400, maskp=0.8, device=torch.device("cpu")):
         super().__init__()
 
         self.seq = seq
         self.output_size = output_size
         self.maskp = maskp
         self.device = device
-        # self.bvp_encoder = SignalEncoder(self.output_size, dropout)
-        # self.eda_encoder = SignalEncoder(self.output_size, dropout)
-        # self.temp_encoder = SignalEncoder(self.output_size, dropout)
-        # self.hr_encoder = SignalEncoder(self.output_size, dropout)
 
         self.encoder = MultiEncoder(output_size=self.output_size, seq=self.seq)
 

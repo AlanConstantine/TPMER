@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import torch
 import datetime
+from torch import nn
 from torch.utils.data import (TensorDataset, DataLoader, SequentialSampler,
                               RandomSampler)
 from sklearn.model_selection import train_test_split
@@ -115,16 +116,17 @@ class StepRunner:
         self.metrics = metrics
         self.stage = stage
         self.optimizer = optimizer
+        self.sig = nn.Sigmoid()
 
     def step(self, features, labels):
-        preds = self.model(features)
+        preds = self.model(features, features)
         if self.optimizer and self.stage == 'train':
             self.optimizer.zero_grad()
         # get loss
         loss = self.loss_fn(preds, labels)
-        # backforward
+        # backward
         if self.stage == 'train':
-            loss.backforward()
+            loss.backward()
             self.optimizer.step()
 
         # get metrics
@@ -140,10 +142,10 @@ class StepRunner:
                 elif metric_name == 'auc':
                     step_metrics[self.stage + "_" + metric_name] = metric_fn(
                         torch.round(self.sig(preds)).long(), labels).item()
-                elif metric_name in ['rmse', 'mae']:
+                elif metric_name in ['mse', 'mae']:
                     step_metrics[self.stage + "_" + metric_name] = metric_fn(
-                        self.sig(preds), labels).item()
-        return step_metrics, loss.item()
+                        preds, labels).item()
+        return loss.item(), step_metrics
 
     def train_step(self, features, labels):
         self.model.train()
@@ -183,9 +185,10 @@ class EpochRunner:
                     file=sys.stdout)
 
         for i, batch in loop:
-            print(len(batch))
-            print('lllllllllll')
-            loss, step_metrics = self.steprunner(*batch)
+            if len(batch) == 1:
+                loss, step_metrics = self.steprunner(batch[0], batch[0])
+            else:
+                loss, step_metrics = self.steprunner(*batch)
             step_log = {}
             if len(step_metrics) != 0:
                 step_log = dict({self.stage + "_loss": loss}, **step_metrics)

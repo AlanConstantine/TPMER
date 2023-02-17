@@ -74,7 +74,7 @@ def run(args,
         if val_data:
             val_step_runner = StepRunner(model=model,
                                          loss_fn=loss_fn,
-                                         metrics=deepcopy(args.metrics),
+                                         metrics=args.metrics_val,
                                          stage='val')
             val_epoch_runner = EpochRunner(val_step_runner, args.metrics)
             with torch.no_grad():
@@ -89,11 +89,12 @@ def run(args,
         arr_scores = history[monitor]
         best_score_idx = np.argmax(arr_scores) if mode == "max" else np.argmin(
             arr_scores)
-        if best_score_idx == len(arr_scores) - 1 and not args.debug:
-            torch.save(model.state_dict(), ckpt_path)
+        if best_score_idx == len(arr_scores) - 1:
             print("<<<<<< reach best {0} : {1} >>>>>>".format(
                 monitor, arr_scores[best_score_idx]))
             best_result = arr_scores[best_score_idx]
+            if not args.debug:
+                torch.save(model.state_dict(), ckpt_path)
         if len(arr_scores) - best_score_idx > patience:
             print(
                 "<<<<<< {} without improvement in {} epoch, early stopping >>>>>>"
@@ -104,6 +105,7 @@ def run(args,
 
     history = pd.DataFrame(history)
     history['lr'] = lrs
+    print(history)
     return history, {monitor: best_result}
 
 
@@ -113,7 +115,7 @@ def main():
     dataprepare = DataPrepare(args)
     train_dataloader, test_dataloader = dataprepare.get_data()
 
-    model = MultiSignalRepresentation(output_size=40)
+    model = MultiSignalRepresentation(output_size=40, device=args.device)
     model = model.to(args.device)
 
     loss_fn = nn.MSELoss()

@@ -9,6 +9,7 @@ from torch import nn
 import os
 import pickle
 import time
+from copy import deepcopy
 
 
 class Params(object):
@@ -34,7 +35,8 @@ class Params(object):
         self.use_cuda = use_cuda
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() and self.use_cuda else 'cpu')
-        self.metrics = {'mse': MeanSquaredError()}
+        self.metrics = {'mse': MeanSquaredError().to(self.device)}
+        self.metrics_val = deepcopy(self.metrics)
         self.batch_size = batch_size
         self.valid = valid
         self.debug = debug
@@ -42,6 +44,7 @@ class Params(object):
         self.epochs = epochs
         if self.debug:
             self.epochs = 5
+            self.batch_size = 8
         self.lr = lr
 
         self.init = init
