@@ -27,7 +27,8 @@ class Params(object):
             batch_size=256,
             dropout=0.2,
             init=True,
-            show_wei=False,):
+            show_wei=False,
+            maskp=0.8):
 
         self.model = model
 
@@ -42,6 +43,7 @@ class Params(object):
         self.debug = debug
         self.target = target
         self.epochs = epochs
+        self.maskp = maskp
         if self.debug:
             self.epochs = 5
             self.batch_size = 8
@@ -51,8 +53,8 @@ class Params(object):
 
         self.dropout = dropout
 
-        self.save_path = './output/{}_{}_{}_{}_{}_{}_{}'.format(
-            dataset, target, model, valid, lr, batch_size, int(time.time()))
+        self.save_path = './output/{}_{}_{}_maskp{}'.format(
+            lr, batch_size, maskp, int(time.time()))
         self.k = None
         self.results = {}
         if not self.debug:
