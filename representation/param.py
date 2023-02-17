@@ -57,6 +57,7 @@ class Params(object):
         self.results = {}
         if not self.debug:
             self.create_log_folder()
+        self.checkpoint = os.path.join(self.save_path, 'checkpoint.pt')
 
     def create_log_folder(self):
         if not os.path.exists(r'./output'):

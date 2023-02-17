@@ -138,7 +138,7 @@ def main():
                                   loss_fn,
                                   patience=24,
                                   train_data=train_dataloader,
-                                  val_data=test_dataloader)
+                                  val_data=test_dataloader, ckpt_path=args.checkpoint)
     time_used = time.time() - st
     print()
     print(best_result)
