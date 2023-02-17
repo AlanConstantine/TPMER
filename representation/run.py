@@ -146,7 +146,7 @@ def main():
     if not args.debug:
         args.save_results(results=args.results)
         history_df.to_csv(
-            os.path.join(args.save_path, 'history_df.csv'), index=False)
+            os.path.join(args.save_path, '{}_history_df.csv'.format(args.checkpoint)), index=False)
 
     print(args.save_path)
 

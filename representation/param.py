@@ -54,12 +54,13 @@ class Params(object):
         self.dropout = dropout
 
         self.save_path = './output/{}_{}_{}_maskp{}'.format(
-            lr, batch_size, maskp, int(time.time()))
+            lr, batch_size, int(time.time()), maskp)
         self.k = None
         self.results = {}
         if not self.debug:
             self.create_log_folder()
-        self.checkpoint = os.path.join(self.save_path, 'checkpoint.pt')
+        self.checkpoint = os.path.join(self.save_path, '{}_{}_maskp{}_checkpoint.pt'.format(
+            lr, batch_size, maskp))
 
     def create_log_folder(self):
         if not os.path.exists(r'./output'):
