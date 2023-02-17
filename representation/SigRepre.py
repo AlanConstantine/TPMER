@@ -200,7 +200,6 @@ class SignalDecoder(nn.Module):
         tgt = tgt.permute(0, 2, 1)
 
         decoder_outputs = self.decoder(tgt, x)
-
         decoder_outputs = decoder_outputs.permute(0, 2, 1)
 
         return decoder_outputs

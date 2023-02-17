@@ -119,7 +119,7 @@ class StepRunner:
         self.sig = nn.Sigmoid()
 
     def step(self, features, labels):
-        preds = self.model(features, features)
+        preds = self.model(features)
         if self.optimizer and self.stage == 'train':
             self.optimizer.zero_grad()
         # get loss
