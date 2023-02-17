@@ -150,7 +150,7 @@ class SignalEncoder(nn.Module):
         return output
 
 
-class MultiEncoder(nn.Module):
+class MultiSignalEncoder(nn.Module):
     def __init__(self, output_size, dropout=0.2, seq=400) -> None:
         super().__init__()
         self.seq = seq
@@ -184,6 +184,28 @@ class MultiEncoder(nn.Module):
         return encoder_outputs
 
 
+class SignalDecoder(nn.Module):
+    def __init__(self, device, maskp) -> None:
+        super().__init__()
+        self.maskp = maskp
+        self.device = device
+        self.decoder = TransformerDecoderLayer(
+            d_model=4, nhead=4, dropout=0.2, batch_first=True)
+
+    def forward(self, x, tgt):
+        mask = (torch.rand((tgt.shape[0], 4, 400), device=self.device)
+                <= self.maskp).int()
+
+        tgt = tgt * mask
+        tgt = tgt.permute(0, 2, 1)
+
+        decoder_outputs = self.decoder(tgt, x)
+
+        decoder_outputs = decoder_outputs.permute(0, 2, 1)
+
+        return decoder_outputs
+
+
 class MultiSignalRepresentation(nn.Module):
 
     def __init__(self, output_size, dropout=0.2, seq=400, maskp=0.8, device=torch.device("cpu")):
@@ -194,21 +216,43 @@ class MultiSignalRepresentation(nn.Module):
         self.maskp = maskp
         self.device = device
 
-        self.encoder = MultiEncoder(output_size=self.output_size, seq=self.seq)
+        self.encoder = MultiSignalEncoder(
+            output_size=self.output_size, seq=self.seq)
 
-        self.decoder = TransformerDecoderLayer(
-            d_model=4, nhead=4, dropout=0.2, batch_first=True)
+        self.output_layer = SignalDecoder(device=self.device, maskp=self.maskp)
 
-    def forward(self, x, tgt):
+    def forward(self, x):
         encoder_outputs = self.encoder(x)
-        mask = (torch.rand((tgt.shape[0], 4, 400), device=self.device)
-                <= self.maskp).int()
+        output = self.output_layer(encoder_outputs, x)
 
-        tgt = tgt * mask
-        tgt = tgt.permute(0, 2, 1)
+        return output
 
-        decoder_outputs = self.decoder(tgt, encoder_outputs)
 
-        decoder_outputs = decoder_outputs.permute(0, 2, 1)
+# class MultiSignalRepresentation(nn.Module):
 
-        return decoder_outputs
+#     def __init__(self, output_size, dropout=0.2, seq=400, maskp=0.8, device=torch.device("cpu")):
+#         super().__init__()
+
+#         self.seq = seq
+#         self.output_size = output_size
+#         self.maskp = maskp
+#         self.device = device
+
+#         self.encoder = MultiEncoder(output_size=self.output_size, seq=self.seq)
+
+#         self.decoder = TransformerDecoderLayer(
+#             d_model=4, nhead=4, dropout=0.2, batch_first=True)
+
+#     def forward(self, x, tgt):
+#         encoder_outputs = self.encoder(x)
+#         mask = (torch.rand((tgt.shape[0], 4, 400), device=self.device)
+#                 <= self.maskp).int()
+
+#         tgt = tgt * mask
+#         tgt = tgt.permute(0, 2, 1)
+
+#         decoder_outputs = self.decoder(tgt, encoder_outputs)
+
+#         decoder_outputs = decoder_outputs.permute(0, 2, 1)
+
+#         return decoder_outputs
