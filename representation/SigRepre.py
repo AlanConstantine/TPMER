@@ -202,7 +202,7 @@ class MultiSignalRepresentation(nn.Module):
     def forward(self, x, tgt):
         encoder_outputs = self.encoder(x)
         mask = (torch.rand((tgt.shape[0], 4, 400), device=self.device)
-                < self.maskp).int()
+                <= self.maskp).int()
 
         tgt = tgt * mask
         tgt = tgt.permute(0, 2, 1)
