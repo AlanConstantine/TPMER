@@ -22,8 +22,8 @@ class Params(object):
             lr=0.0001,
             epochs=200,
             valid='loso',
-            target='valence',
-            batch_size=256,
+            target='valence_label',
+            batch_size=64,
             dropout=0.2,
             out_channels=32,
             hidden_size=64,  # lstm hidden_size
@@ -33,7 +33,7 @@ class Params(object):
         fcn_input=12608,  # Transformer fcn num
             init=True,
             show_wei=False,
-            pretrain=True):
+            pretrain=r'./output/0.0001_256_maskp0.8_checkpoint.pt'):
 
         self.data = r'./processed_signal/HKU956/400_4s_step_2s.pkl'
         self.spliter = r'./processed_signal/HKU956/400_4s_step_2s_spliter10.pkl'
