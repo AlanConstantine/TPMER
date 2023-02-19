@@ -23,7 +23,7 @@ class Params(object):
             epochs=200,
             valid='loso',
             target='valence_label',
-            batch_size=64,
+            batch_size=128,
             dropout=0.2,
             out_channels=32,
             hidden_size=64,  # lstm hidden_size
@@ -35,8 +35,10 @@ class Params(object):
             show_wei=False,
             pretrain=r'./output/0.0001_256_maskp0.8_checkpoint.pt'):
 
-        self.data = r'./processed_signal/HKU956/400_4s_step_2s.pkl'
-        self.spliter = r'./processed_signal/HKU956/400_4s_step_2s_spliter10.pkl'
+        # self.data = r'./processed_signal/HKU956/400_4s_step_2s.pkl'
+        self.data = r'./processed_signal/HKU956/last30_400_4s_step_2s.pkl'
+
+        self.spliter = r'./processed_signal/HKU956/last30_400_4s_step_2s_spliter10.pkl'
         if dataset == 'KEC':
             self.data = r'./processed_signal/KEmoCon/KEC_400.pkl'
             self.spliter = r'./processed_signal/KEmoCon/KEC_400_spliter10.pkl'
