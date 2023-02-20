@@ -30,6 +30,7 @@ import time
 import warnings
 from copy import deepcopy
 from representation.SigRepre import MultiSignalRepresentation
+from sklearn.metrics import classification_report
 # warnings.filterwarnings('ignore')
 
 torch.manual_seed(3407)
@@ -67,7 +68,10 @@ class StepRunner:
         if self.optimizer is not None and self.stage == "train":
             self.optimizer.zero_grad()
 
-        loss = self.loss_fn(preds, labels.float())
+        if self.args.target in ['valence', 'arousal']:
+            loss = self.loss_fn(preds, labels.float())
+        else:
+            loss = self.loss_fn(preds, labels.long().reshape(-1, ))
 
         if self.stage == "train":
             loss.backward()
@@ -75,31 +79,39 @@ class StepRunner:
 
         # metrics
         step_metrics = {}
+        best_report = None
         for name, metric_fn in self.metrics_dict.items():
 
             if self.args.target in ['valence', 'arousal']:
                 step_metrics[self.stage + "_" + name] = metric_fn(
                     preds, labels).item()
             else:
+                _, predicted = torch.max(preds.data, 1)
+                # print(predicted.shape)
                 if name == 'f1':
                     step_metrics[self.stage + "_" + name] = metric_fn(
-                        torch.round(self.sig(preds)).long(), labels).item()
-                elif name == 'auc':
-                    step_metrics[self.stage + "_" + name] = metric_fn(
-                        torch.round(self.sig(preds)).long(), labels).item()
+                        predicted, labels.reshape(-1, )).item()
+                # elif name == 'auc':
+                #     step_metrics[self.stage + "_" + name] = metric_fn(
+                #         torch.round(self.sig(preds)).long(), labels).item()
                 elif name == 'acc':
                     step_metrics[self.stage + "_" + name] = metric_fn(
-                        torch.round(preds), labels).item()
+                        predicted, labels.reshape(-1, )).item()
+                    # step_metrics[self.stage + "_" +
+                    #              name] = (predicted == labels).sum().item() / preds.shape[0]
                 else:
                     pass
+                # if self.stage != 'train':
+                #     best_report = classification_report(predicted.cpu().detach().numpy(
+                #     ), labels.cpu().detach().numpy(), output_dict=True, zero_division=1)
         self.results = step_metrics
-        return loss.item(), step_metrics
+        return loss.item(), step_metrics, best_report
 
     def train_step(self, features, labels):
         self.net.train()
         return self.step(features, labels)
 
-    @torch.no_grad()
+    @ torch.no_grad()
     def eval_step(self, features, labels):
         self.net.eval()
         return self.step(features, labels)
@@ -130,7 +142,7 @@ class EpochRunner:
                     total=len(dataloader),
                     file=sys.stdout)
         for i, batch in loop:
-            loss, step_metrics = self.steprunner(*batch)
+            loss, step_metrics, best_report = self.steprunner(*batch)
             step_log = dict({self.stage + "_loss": loss}, **step_metrics)
             total_loss += loss
             step += 1
@@ -219,17 +231,19 @@ def train_model(args,
         arr_scores = history[monitor]
         best_score_idx = np.argmax(arr_scores) if mode == "max" else np.argmin(
             arr_scores)
-        if best_score_idx == len(arr_scores) - 1 and not args.debug:
-            torch.save(net.state_dict(), ckpt_path)
+        if best_score_idx == len(arr_scores) - 1:
             print("<<<<<< reach best {0} : {1} >>>>>>".format(
                 monitor, arr_scores[best_score_idx]))
             best_result = arr_scores[best_score_idx]
+            if not args.debug:
+                torch.save(net.state_dict(), ckpt_path)
         if len(arr_scores) - best_score_idx > patience:
             print(
                 "<<<<<< {} without improvement in {} epoch, early stopping >>>>>>"
                 .format(monitor, patience))
             break
         if not args.debug:
+            print('loading best checkpoint...')
             net.load_state_dict(torch.load(ckpt_path))
 
     history = pd.DataFrame(history)
@@ -240,10 +254,11 @@ def train_model(args,
 def run(train_dataloader, test_dataloader, args):
     model = MultiSignalRepresentation(output_size=40, device=args.device)
     model.load_state_dict(torch.load(args.pretrain))
-    model.output_layer = MER.MERClassifer(args, 1)
+    model.output_layer = MER.MERClassifer(args, 2)
     model = model.to(args.device)
 
-    loss_fn = nn.BCEWithLogitsLoss()
+    # loss_fn = nn.BCEWithLogitsLoss()
+    loss_fn = nn.CrossEntropyLoss()
     mode = 'max'
     if args.target in ['valence', 'arousal']:
         loss_fn = nn.MSELoss()
@@ -318,7 +333,10 @@ def main():
 
     print(args.save_path)
     avg_res = []
+    print(args.results)
     for fold in args.results.keys():
+        # if fold == 'valid_clf_report':
+        #     continue
         print('Fold', fold, 'best result:', args.results[fold]['best_result'],
               'Time used:', args.results[fold]['time_used'])
         avg_res.append(args.results[fold]['best_result'][list(

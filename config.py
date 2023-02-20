@@ -18,7 +18,7 @@ class Params(object):
             dataset='HKU',
             model='SG',
             use_cuda=True,
-            debug=False,
+            debug=True,
             lr=0.0001,
             epochs=200,
             valid='loso',
@@ -65,6 +65,7 @@ class Params(object):
         self.epochs = epochs
         if self.debug:
             self.epochs = 5
+            self.batch_size = 8
         self.lr = lr
 
         self.init = init
@@ -88,11 +89,12 @@ class Params(object):
                 # 'auc': AUC().to(self.device)
             }
 
-        self.save_path = './output/{}_{}_{}_{}_{}_{}_{}_{}_{}'.format(
-            self.pretrain, dataset, target, model, valid, lr, batch_size,
-            out_channels, int(time.time()))
+        self.save_path = '{}_{}_{}_{}_{}_{}_{}'.format(
+            dataset, target, model, valid, lr, batch_size, int(time.time()))
         self.k = None
+        # self.results = {'valid_clf_report': []}
         self.results = {}
+
         if not self.debug:
             self.create_log_folder()
 
