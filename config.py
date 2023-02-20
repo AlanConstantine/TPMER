@@ -17,13 +17,13 @@ class Params(object):
             self,
             dataset='HKU',
             model='SG',
-            use_cuda=True,
-            debug=False,
+            use_cuda=False,
+            debug=True,
             lr=0.0001,
             epochs=200,
             valid='loso',
-            target='valence_label',
-            batch_size=16,
+            target='valence',
+            batch_size=256,
             dropout=0.2,
             out_channels=32,
             hidden_size=64,  # lstm hidden_size
@@ -36,9 +36,9 @@ class Params(object):
             pretrain=r'./output/0.0001_256_maskp0.8_checkpoint.pt'):
 
         # self.data = r'./processed_signal/HKU956/400_4s_step_2s.pkl'
-        self.data = r'./processed_signal/HKU956/last30_400_4s_step_2s.pkl'
+        self.data = r'./processed_signal/HKU956/400_4s_step_2s.pkl'
 
-        self.spliter = r'./processed_signal/HKU956/last30_400_4s_step_2s_spliter10.pkl'
+        self.spliter = r'./processed_signal/HKU956/400_4s_step_2s_spliter10.pkl'
         if dataset == 'KEC':
             self.data = r'./processed_signal/KEmoCon/KEC_400.pkl'
             self.spliter = r'./processed_signal/KEmoCon/KEC_400_spliter10.pkl'

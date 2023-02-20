@@ -90,13 +90,13 @@ class StepRunner:
                 # print(predicted.shape)
                 if name == 'f1':
                     step_metrics[self.stage + "_" + name] = metric_fn(
-                        predicted, labels.reshape(-1, )).item()
+                        predicted, labels.long().reshape(-1, )).item()
                 # elif name == 'auc':
                 #     step_metrics[self.stage + "_" + name] = metric_fn(
                 #         torch.round(self.sig(preds)).long(), labels).item()
                 elif name == 'acc':
                     step_metrics[self.stage + "_" + name] = metric_fn(
-                        predicted, labels.reshape(-1, )).item()
+                        predicted, labels.long().reshape(-1, )).item()
                     # step_metrics[self.stage + "_" +
                     #              name] = (predicted == labels).sum().item() / preds.shape[0]
                 else:
