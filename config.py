@@ -80,7 +80,7 @@ class Params(object):
         self.nhead = nhead
 
         self.metrics_dict = {}
-        if self.target in ['valence', 'arousal']:
+        if self.target in ['valence_rating', 'arousal_rating']:
             self.metrics_dict = {'mse': MeanSquaredError().to(self.device)}
         else:
             self.metrics_dict = {
