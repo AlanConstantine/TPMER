@@ -68,7 +68,7 @@ class StepRunner:
         if self.optimizer is not None and self.stage == "train":
             self.optimizer.zero_grad()
 
-        if self.args.target in ['valence', 'arousal']:
+        if self.args.target in ['valence_rating', 'arousal_rating']:
             loss = self.loss_fn(preds, labels.float())
         else:
             loss = self.loss_fn(preds, labels.long().reshape(-1, ))
@@ -82,7 +82,7 @@ class StepRunner:
         best_report = None
         for name, metric_fn in self.metrics_dict.items():
 
-            if self.args.target in ['valence', 'arousal']:
+            if self.args.target in ['valence_rating', 'arousal_rating']:
                 step_metrics[self.stage + "_" + name] = metric_fn(
                     preds, labels).item()
             else:
@@ -243,7 +243,7 @@ def train_model(args,
                 .format(monitor, patience))
             break
         if not args.debug:
-            print('loading best checkpoint...')
+            print('loading best checkpoint:', ckpt_path)
             net.load_state_dict(torch.load(ckpt_path))
 
     history = pd.DataFrame(history)
@@ -260,7 +260,7 @@ def run(train_dataloader, test_dataloader, args):
     # loss_fn = nn.BCEWithLogitsLoss()
     loss_fn = nn.CrossEntropyLoss()
     mode = 'max'
-    if args.target in ['valence', 'arousal']:
+    if args.target in ['valence_rating', 'arousal_rating']:
         loss_fn = nn.MSELoss()
         mode = "min"
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr)

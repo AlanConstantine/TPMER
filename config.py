@@ -18,12 +18,12 @@ class Params(object):
             dataset='HKU',
             model='SG',
             use_cuda=True,
-            debug=True,
+            debug=False,
             lr=0.0001,
             epochs=200,
             valid='loso',
             target='valence_label',
-            batch_size=128,
+            batch_size=16,
             dropout=0.2,
             out_channels=32,
             hidden_size=64,  # lstm hidden_size
@@ -91,17 +91,14 @@ class Params(object):
 
         self.save_path = '{}_{}_{}_{}_{}_{}_{}'.format(
             dataset, target, model, valid, lr, batch_size, int(time.time()))
+        if 'output' not in self.save_path:
+            self.save_path = os.path.join(r'./output', self.save_path)
         self.k = None
         # self.results = {'valid_clf_report': []}
         self.results = {}
 
         if not self.debug:
             self.create_log_folder()
-
-        self.fcn = nn.Sequential(nn.Dropout(p=0.2),
-                                 nn.Linear(self.fcn_input, 128), nn.ReLU(),
-                                 nn.Dropout(p=0.2), nn.Linear(128, 32),
-                                 nn.ReLU(), nn.Linear(32, 1))
 
     def create_log_folder(self):
         if not os.path.exists(r'./output'):
