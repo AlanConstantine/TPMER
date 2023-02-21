@@ -17,9 +17,10 @@ class Params(object):
             self,
             dataset='HKU',
             model='SG',
-            use_cuda=False,
+            use_cuda=True,
             debug=True,
-            lr=0.0001,
+            lr=0.1,
+            # lr=0.0001,
             epochs=200,
             valid='loso',
             target='valence',
@@ -32,7 +33,7 @@ class Params(object):
             #  fcn_input=50432,  # LSTM fcn num
         fcn_input=12608,  # Transformer fcn num
             init=True,
-            show_wei=False,
+            show_wei=True,
             pretrain=r'./output/0.0001_256_maskp0.8_checkpoint.pt'):
 
         # self.data = r'./processed_signal/HKU956/400_4s_step_2s.pkl'
@@ -65,7 +66,7 @@ class Params(object):
         self.epochs = epochs
         if self.debug:
             self.epochs = 5
-            self.batch_size = 8
+            self.batch_size = 16
         self.lr = lr
 
         self.init = init

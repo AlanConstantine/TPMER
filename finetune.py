@@ -64,6 +64,7 @@ class StepRunner:
 
     def step(self, features, labels):
         preds = self.net(features)
+        print(preds)
 
         if self.optimizer is not None and self.stage == "train":
             self.optimizer.zero_grad()
