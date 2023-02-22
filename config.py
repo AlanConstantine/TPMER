@@ -23,7 +23,7 @@ class Params(object):
             # lr=0.0001,
             epochs=200,
             valid='loso',
-            target='valence',
+            target='valence_rating',
             batch_size=256,
             dropout=0.2,
             out_channels=32,

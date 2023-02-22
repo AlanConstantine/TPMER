@@ -64,7 +64,7 @@ class StepRunner:
 
     def step(self, features, labels):
         preds = self.net(features)
-        print(preds)
+        # print(preds)
 
         if self.optimizer is not None and self.stage == "train":
             self.optimizer.zero_grad()
@@ -255,8 +255,6 @@ def train_model(args,
 def run(train_dataloader, test_dataloader, args):
     model = MultiSignalRepresentation(output_size=40, device=args.device)
     model.load_state_dict(torch.load(args.pretrain))
-    model.output_layer = MER.MERClassifer(args, 2)
-    model = model.to(args.device)
 
     # loss_fn = nn.BCEWithLogitsLoss()
     loss_fn = nn.CrossEntropyLoss()
@@ -264,6 +262,10 @@ def run(train_dataloader, test_dataloader, args):
     if args.target in ['valence_rating', 'arousal_rating']:
         loss_fn = nn.MSELoss()
         mode = "min"
+        model.output_layer = MER.MERRegressor()
+    else:
+        model.output_layer = MER.MERClassifer(args, 2)
+    model = model.to(args.device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr)
     scheduler = ReduceLROnPlateau(optimizer,
                                   mode='min',
