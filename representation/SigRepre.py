@@ -207,23 +207,40 @@ class SignalDecoder(nn.Module):
 
 class MultiSignalRepresentation(nn.Module):
 
-    def __init__(self, output_size, dropout=0.2, seq=400, maskp=0.8, device=torch.device("cpu")):
+    def __init__(self, output_size, pretrain=False, dropout=0.2, seq=400, maskp=0.8, device=torch.device("cpu")):
         super().__init__()
 
         self.seq = seq
         self.output_size = output_size
         self.maskp = maskp
         self.device = device
+        self.pretrain = pretrain
 
         self.encoder = MultiSignalEncoder(
             output_size=self.output_size, seq=self.seq)
 
         self.output_layer = SignalDecoder(device=self.device, maskp=self.maskp)
 
-    def forward(self, x):
-        encoder_outputs = self.encoder(x)
-        output = self.output_layer(encoder_outputs, x)
+        self.fcn = nn.Sequential(
+            nn.Linear(output_size, 128),
+            nn.ReLU(),
+            nn.Dropout(p=0.2),
+            nn.Linear(128, 32),
+            nn.ReLU(),
+            nn.Linear(32, 2)
+        )
 
+    def forward(self, x):
+        if not self.pretrain:
+            mask = (torch.rand((x.shape[0], 4, 400), device=self.device)
+                    <= self.maskp).int()
+            x = x * mask
+            encoder_outputs = self.encoder(x)
+            output = self.output_layer(encoder_outputs, x)
+            return output
+
+        encoder_outputs = self.encoder(x)
+        output = self.fcn(encoder_outputs)
         return output
 
 
