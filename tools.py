@@ -224,6 +224,11 @@ class DataPrepare(object):
         self.args = args
 
         X, y = join_signals(data, target=target)
+        print('Target distribution:')
+        print(pd.Series(y.flatten()).value_counts())
+        np.random.shuffle(train_index)
+        np.random.shuffle(test_index)
+
         xtrain, ytrain, xtest, ytest = X[train_index], y[train_index], X[
             test_index], y[test_index]
 
@@ -232,6 +237,10 @@ class DataPrepare(object):
                                                   1000], ytrain[:1000], xtest[:100], ytest[:100]
 
         print(xtrain.shape, ytrain.shape, xtest.shape, ytest.shape)
+        print('Train target distribution')
+        print(pd.Series(ytrain.flatten()).value_counts())
+        print('Test target distribution')
+        print(pd.Series(ytest.flatten()).value_counts())
 
         xtrain = torch.from_numpy(xtrain).to(torch.float32)
         xtest = torch.from_numpy(xtest).to(torch.float32)

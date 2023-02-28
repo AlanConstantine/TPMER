@@ -25,7 +25,7 @@ class MERClassifer(nn.Module):
         self.act3 = nn.Softmax(dim=1)
 
     # forward propagate input
-    def forward(self, X, y):
+    def forward(self, X):
         # input to first hidden layer
         X = X.flatten(start_dim=1)
         X = self.hidden1(X)
@@ -72,7 +72,7 @@ class MERRegressor(nn.Module):
         xavier_uniform_(self.hidden3.weight)
 
     # forward propagate input
-    def forward(self, X, y):
+    def forward(self, X):
         # input to first hidden layer
         X = X.flatten(start_dim=1)
 

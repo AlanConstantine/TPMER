@@ -18,13 +18,13 @@ class Params(object):
             dataset='HKU',
             model='SG',
             use_cuda=True,
-            debug=True,
-            lr=0.1,
+            debug=False,
+            lr=0.01,
             # lr=0.0001,
             epochs=200,
             valid='loso',
-            target='valence_rating',
-            batch_size=256,
+            target='valence',
+            batch_size=16,
             dropout=0.2,
             out_channels=32,
             hidden_size=64,  # lstm hidden_size
@@ -37,23 +37,24 @@ class Params(object):
             pretrain=r'./output/0.0001_256_maskp0.8_checkpoint.pt'):
 
         # self.data = r'./processed_signal/HKU956/400_4s_step_2s.pkl'
-        self.data = r'./processed_signal/HKU956/400_4s_step_2s.pkl'
+        self.data = r'./processed_signal/HKU956/resampled_last30_400_4s_step_2s.pkl'
 
-        self.spliter = r'./processed_signal/HKU956/400_4s_step_2s_spliter10.pkl'
-        if dataset == 'KEC':
-            self.data = r'./processed_signal/KEmoCon/KEC_400.pkl'
-            self.spliter = r'./processed_signal/KEmoCon/KEC_400_spliter10.pkl'
-        if dataset == 'WES':
-            self.data = r'./processed_signal/WESAD/400_4s_step_2s.pkl'
-            self.spliter = r'./processed_signal/WESAD/400_4s_step_2s_spliter10.pkl'
+        self.spliter = r'./processed_signal/HKU956/resampled_last30_400_4s_step_2s_spliter10.pkl'
+
+        # if dataset == 'KEC':
+        #     self.data = r'./processed_signal/KEmoCon/KEC_400.pkl'
+        #     self.spliter = r'./processed_signal/KEmoCon/KEC_400_spliter10.pkl'
+        # if dataset == 'WES':
+        #     self.data = r'./processed_signal/WESAD/400_4s_step_2s.pkl'
+        #     self.spliter = r'./processed_signal/WESAD/400_4s_step_2s_spliter10.pkl'
         self.model = model
 
         self.pretrain = pretrain
         self.pretrain_model = ''
-        if self.pretrain and self.model == 'CT':
-            self.pretrain_model = r'./output/HKU956/valence_CTransformer_loso_0.0001_256_32/fold2_checkpoint.pt'
-        elif self.pretrain and self.model == 'SG':
-            self.pretrain_model = r'./output/False_WES_valence_SG_loso_0.0001_512_32/fold4_checkpoint.pt'
+        # if self.pretrain and self.model == 'CT':
+        #     self.pretrain_model = r'./output/HKU956/valence_CTransformer_loso_0.0001_256_32/fold2_checkpoint.pt'
+        # elif self.pretrain and self.model == 'SG':
+        #     self.pretrain_model = r'./output/False_WES_valence_SG_loso_0.0001_512_32/fold4_checkpoint.pt'
 
         self.show_wei = show_wei
         self.use_cuda = use_cuda
@@ -85,7 +86,7 @@ class Params(object):
             self.metrics_dict = {'mse': MeanSquaredError().to(self.device)}
         else:
             self.metrics_dict = {
-                'f1': F1Score().to(self.device),
+                'f1': F1Score(average='weighted', num_classes=2).to(self.device),
                 'acc': Accuracy().to(self.device),
                 # 'auc': AUC().to(self.device)
             }
