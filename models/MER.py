@@ -25,18 +25,18 @@ class MERClassifer(nn.Module):
         self.act3 = nn.Softmax(dim=1)
 
     # forward propagate input
-    def forward(self, X):
+    def forward(self, x):
         # input to first hidden layer
-        X = X.flatten(start_dim=1)
-        X = self.hidden1(X)
-        X = self.act1(X)
+        x = x.flatten(start_dim=1)
+        x = self.hidden1(x)
+        x = self.act1(x)
         # second hidden layer
-        X = self.hidden2(X)
-        X = self.act2(X)
+        x = self.hidden2(x)
+        x = self.act2(x)
         # output layer
-        X = self.hidden3(X)
-        X = self.act3(X)
-        return X
+        x = self.hidden3(x)
+        x = self.act3(x)
+        return x
         # self.pretrain_model = MultiSignalRepresentation(
         #     output_size=40, device=args.device)
         # self.pretrain_model.load_state_dict(
@@ -72,18 +72,18 @@ class MERRegressor(nn.Module):
         xavier_uniform_(self.hidden3.weight)
 
     # forward propagate input
-    def forward(self, X):
+    def forward(self, x):
         # input to first hidden layer
-        X = X.flatten(start_dim=1)
+        x = x.flatten(start_dim=1)
 
-        X = self.hidden1(X)
-        X = self.act1(X)
+        x = self.hidden1(x)
+        x = self.act1(x)
         # second hidden layer
-        X = self.hidden2(X)
-        X = self.act2(X)
+        x = self.hidden2(x)
+        x = self.act2(x)
         # output layer
-        X = self.hidden3(X)
-        return X
+        x = self.hidden3(x)
+        return x
 
 
 class SignalSample(nn.Module):
@@ -102,13 +102,13 @@ class SignalSample(nn.Module):
         xavier_uniform_(self.output_layer.weight)
 
     # forward propagate input
-    def forward(self, X):
+    def forward(self, x):
         # input to first hidden layer
-        X = self.hidden1(X)
-        X = self.act1(X)
+        x = self.hidden1(x)
+        x = self.act1(x)
         # second hidden layer
-        X = self.hidden2(X)
-        X = self.act2(X)
+        x = self.hidden2(x)
+        x = self.act2(x)
         # output layer
-        X = self.output_layer(X)
-        return X
+        x = self.output_layer(x)
+        return x

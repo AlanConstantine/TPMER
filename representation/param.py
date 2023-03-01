@@ -24,7 +24,7 @@ class Params(object):
             epochs=200,
             valid='loso',
             target='valence',
-            batch_size=256,
+            batch_size=8,
             dropout=0.2,
             init=True,
             show_wei=False,

@@ -9,6 +9,8 @@ from torch.utils.data import (
 from torch.nn import TransformerEncoder, TransformerEncoderLayer, TransformerDecoderLayer, TransformerDecoder
 
 import torch
+from torch.nn.init import kaiming_uniform_
+from torch.nn.init import xavier_uniform_
 
 from torch import nn
 import torch.nn.functional as F
@@ -177,9 +179,8 @@ class MultiSignalEncoder(nn.Module):
         outputs = [bvp_encoder, eda_encoder, temp_encoder, hr_encoder]
 
         encoder_outputs = torch.stack(outputs, 1)
-        # output: [batch_size, seq_len, channels]
-
-        encoder_outputs = encoder_outputs.permute(0, 2, 1)
+        # output: [batch_size, feature, seq_len]
+        # encoder_outputs = encoder_outputs.permute(0, 2, 1)
 
         return encoder_outputs
 
@@ -187,16 +188,16 @@ class MultiSignalEncoder(nn.Module):
 class SignalDecoder(nn.Module):
     def __init__(self, device, maskp) -> None:
         super().__init__()
-        self.maskp = maskp
+        # self.maskp = maskp
         self.device = device
         self.decoder = TransformerDecoderLayer(
             d_model=4, nhead=4, dropout=0.2, batch_first=True)
 
     def forward(self, x, tgt):
-        mask = (torch.rand((tgt.shape[0], 4, 400), device=self.device)
-                <= self.maskp).int()
+        # mask = (torch.rand((tgt.shape[0], 4, 400), device=self.device)
+        #         <= self.maskp).int()
 
-        tgt = tgt * mask
+        # tgt = tgt * mask
         tgt = tgt.permute(0, 2, 1)
 
         decoder_outputs = self.decoder(tgt, x)
@@ -205,43 +206,95 @@ class SignalDecoder(nn.Module):
         return decoder_outputs
 
 
+class ProjectionHead(nn.Module):
+    def __init__(self, encoder_output, seq) -> None:
+        super().__init__()
+        self.hidden1 = nn.Linear(encoder_output, 128)
+        kaiming_uniform_(self.hidden1.weight, nonlinearity='relu')
+        self.act1 = nn.ReLU()
+        # second hidden layer
+        self.hidden2 = nn.Linear(128, 256)
+        kaiming_uniform_(self.hidden2.weight, nonlinearity='relu')
+        self.act2 = nn.ReLU()
+        # third hidden layer and output
+        self.hidden3 = nn.Linear(256, seq)
+        xavier_uniform_(self.hidden3.weight)
+        # self.fcn = nn.Sequential(
+        #     nn.Linear(encoder_output, 128),
+        #     nn.ReLU(),
+        #     nn.Dropout(p=0.2),
+        #     nn.Linear(128, 256),
+        #     nn.ReLU(),
+        #     nn.Linear(256, seq)
+        # )
+        # kaiming_uniform_(self.fcn.weight, nonlinearity='relu')
+
+    def forward(self, x):
+        # input to first hidden layer
+        x = self.hidden1(x)
+        x = self.act1(x)
+        # second hidden layer
+        x = self.hidden2(x)
+        x = self.act2(x)
+        # output layer
+        x = self.hidden3(x)
+        return x
+
+
 class MultiSignalRepresentation(nn.Module):
 
-    def __init__(self, output_size, pretrain=False, dropout=0.2, seq=400, maskp=0.8, device=torch.device("cpu")):
+    def __init__(self, output_size, channel_maskp=0.5, pretrained=False, dropout=0.2, seq=400, maskp=0.8, device=torch.device("cpu")):
         super().__init__()
 
         self.seq = seq
         self.output_size = output_size
-        self.maskp = maskp
+        self.signal_maskp = maskp
+        self.channel_maskp = channel_maskp
         self.device = device
-        self.pretrain = pretrain
+        self.pretrained = pretrained
 
         self.encoder = MultiSignalEncoder(
             output_size=self.output_size, seq=self.seq)
 
-        self.output_layer = SignalDecoder(device=self.device, maskp=self.maskp)
+        # self.output_layer = SignalDecoder(
+        #     device=self.device, maskp=self.signal_maskp)
+        self.output_layer = ProjectionHead(
+            encoder_output=self.output_size, seq=self.seq)
 
-        self.fcn = nn.Sequential(
-            nn.Linear(output_size, 128),
-            nn.ReLU(),
-            nn.Dropout(p=0.2),
-            nn.Linear(128, 32),
-            nn.ReLU(),
-            nn.Linear(32, 2)
-        )
+        # self.fcn = nn.Sequential(
+        #     nn.Linear(output_size, 128),
+        #     nn.ReLU(),
+        #     nn.Dropout(p=0.2),
+        #     nn.Linear(128, 32),
+        #     nn.ReLU(),
+        #     nn.Linear(32, 2)
+        # )
+
+    def masking_generator(self, batch_size, seq_len):
+        signal_mask = (torch.rand((batch_size, 4, seq_len), device=self.device)
+                       <= self.signal_maskp).int()
+        channel_mask = [np.random.choice(
+            [0, 1], size=4, p=[self.channel_maskp, 1-self.channel_maskp]) for i in range(batch_size)]
+        channel_mask = [mask.tolist() if np.sum(mask) != 0 else [
+            1, 1, 1, 1] for mask in channel_mask]
+        channel_mask = np.asarray([[[i] * seq_len for i in mask]
+                                  for mask in channel_mask]).astype(int)
+        channel_mask = torch.from_numpy(channel_mask).to(device=self.device)
+        return channel_mask * signal_mask
 
     def forward(self, x):
-        if not self.pretrain:
-            mask = (torch.rand((x.shape[0], 4, 400), device=self.device)
-                    <= self.maskp).int()
-            x = x * mask
-            encoder_outputs = self.encoder(x)
-            output = self.output_layer(encoder_outputs, x)
-            return output
-
+        if not self.pretrained:
+            # masking = (torch.rand((x.shape[0], 4, 400), device=self.device)
+            #            <= self.maskp).int()
+            masking = self.masking_generator(x.shape[0], x.shape[2])
+            x = x * masking
         encoder_outputs = self.encoder(x)
-        output = self.fcn(encoder_outputs)
+        output = self.output_layer(encoder_outputs)
         return output
+
+        # encoder_outputs = self.encoder(x)
+        # output = self.fcn(encoder_outputs)
+        # return output
 
 
 # class MultiSignalRepresentation(nn.Module):

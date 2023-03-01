@@ -368,7 +368,6 @@ def main():
 
     print(args.save_path)
     avg_res = []
-    # print(args.results[0]['clf_rep'])
     for fold in args.results.keys():
         # if fold == 'valid_clf_report':
         #     continue
@@ -419,7 +418,6 @@ def api(args):
 
     print(args.save_path)
     avg_res = []
-    print(args.results[0]['clf_rep'])
     for fold in args.results.keys():
         # if fold == 'valid_clf_report':
         #     continue
