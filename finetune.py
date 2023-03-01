@@ -337,7 +337,7 @@ def main():
 
     print(args.save_path)
     avg_res = []
-    print(args.results)
+    # print(args.results)
     for fold in args.results.keys():
         # if fold == 'valid_clf_report':
         #     continue
