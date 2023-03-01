@@ -17,7 +17,7 @@ targets = ['valence_label', 'arousal_label']
 all_results = []
 
 for e in data_dict:
-    data_name = os.path.split(e['data'])[-1].replace('.pkl')
+    data_name = os.path.split(e['data'])[-1].replace('.pkl', '')
     data = e['data']
     spliter = e['spliter']
     for targ in targets:
