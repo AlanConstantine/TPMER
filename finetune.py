@@ -197,6 +197,7 @@ def train_model(args,
 
     best_result = None
     best_score_idx = 0
+    final_rep = []
 
     if args.init:
         net.apply(init_xavier)
@@ -230,6 +231,8 @@ def train_model(args,
             with torch.no_grad():
                 val_metrics, test_epoch_clf_reports = val_epoch_runner(
                     val_data)
+
+                final_rep.append(test_epoch_clf_reports)
             val_metrics["epoch"] = epoch
             for name, metric in val_metrics.items():
                 history[name] = history.get(name, []) + [metric]
@@ -264,10 +267,10 @@ def train_model(args,
             # print('loading best checkpoint:', ckpt_path)
             net.load_state_dict(torch.load(ckpt_path))
 
-    test_epoch_clf_reports = test_epoch_clf_reports[best_score_idx]
+    final_rep = final_rep[best_score_idx]
     history = pd.DataFrame(history)
     history['lr'] = lrs
-    return history, {monitor: best_result}, test_epoch_clf_reports
+    return history, {monitor: best_result}, final_rep
 
 
 def run(train_dataloader, test_dataloader, args):
@@ -297,7 +300,7 @@ def run(train_dataloader, test_dataloader, args):
                                   eps=1e-08)
     metrics_dict = args.metrics_dict
 
-    history_df, best_result, test_epoch_clf_reports = train_model(
+    history_df, best_result, final_rep = train_model(
         args,
         model,
         optimizer,
@@ -312,7 +315,7 @@ def run(train_dataloader, test_dataloader, args):
         mode=mode,
         ckpt_path=os.path.join(
             args.save_path, 'fold{}_{}'.format(str(args.k), 'checkpoint.pt')))
-    return history_df, best_result, test_epoch_clf_reports
+    return history_df, best_result, final_rep
 
 
 def main():
@@ -337,7 +340,7 @@ def main():
                                   device=args.device,
                                   batch_size=args.batch_size)
         train_dataloader, test_dataloader = dataprepare.get_data()
-        history_df, best_result, test_epoch_clf_reports = run(
+        history_df, best_result, final_rep = run(
             train_dataloader, test_dataloader, args)
 
         time_used = time.time() - st
@@ -345,7 +348,7 @@ def main():
             'history': history_df,
             'best_result': best_result,
             'time_used': time_used,
-            'clf_rep': test_epoch_clf_reports
+            'clf_rep': final_rep
         }
         print()
         print('[Used time: {}s]'.format(round(time_used), 4))
