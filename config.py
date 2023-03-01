@@ -17,14 +17,14 @@ class Params(object):
             self,
             dataset='HKU',
             model='SG',
-            use_cuda=False,
+            use_cuda=True,
             debug=False,
-            lr=0.01,
+            lr=0.0001,
             # lr=0.0001,
             epochs=200,
             valid='cv',
-            target='valence_label',
-            batch_size=16,
+            target='valence',
+            batch_size=256,
             dropout=0.2,
             out_channels=32,
             hidden_size=64,  # lstm hidden_size
@@ -34,12 +34,12 @@ class Params(object):
         fcn_input=12608,  # Transformer fcn num
             init=True,
             show_wei=True,
-            pretrain=r'./output/0.0001_256_maskp0.8_checkpoint.pt'):
+            pretrain=r'./representation/output/0.0001_256_1677293682_maskp0.8/0.0001_256_maskp0.8_checkpoint.pt'):
 
         # self.data = r'./processed_signal/HKU956/400_4s_step_2s.pkl'
-        self.data = r'./processed_signal/HKU956/resampled_last30_400_4s_step_2s.pkl'
+        self.data = r'./processed_signal/HKU956/last15_400_4s_step_2s.pkl'
 
-        self.spliter = r'./processed_signal/HKU956/resampled_last30_400_4s_step_2s_spliter10.pkl'
+        self.spliter = r'./processed_signal/HKU956/last15_400_4s_step_2s_spliter10.pkl'
 
         if dataset == 'KEC':
             self.data = r'./processed_signal/KEmoCon/KEC_400.pkl'
