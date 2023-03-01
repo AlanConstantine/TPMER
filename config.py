@@ -34,12 +34,16 @@ class Params(object):
         fcn_input=12608,  # Transformer fcn num
             init=True,
             show_wei=False,
+            data=r'./processed_signal/HKU956/1540_24s_step_2s.pkl',
+            spliter=r'./processed_signal/HKU956/1540_24s_step_2s_spliter5.pkl'
             pretrain=r'./representation/output/0.0001_256_1677293682_maskp0.8/0.0001_256_maskp0.8_checkpoint.pt'
             # pretrain=r'./output/0.0001_256_maskp0.8_checkpoint.pt'
     ):
-        self.data = r'./processed_signal/HKU956/1540_24s_step_2s.pkl'
+        self.data = data
 
-        self.spliter = r'./processed_signal/HKU956/1540_24s_step_2s_spliter5.pkl'
+        self.spliter = spliter
+
+        data_name = os.path.split(data)[-1].replace('.pkl', '')
         self.input_size = int(self.data.split('_')[-4].split('/')[-1]) - 4
         # self.data = r'./processed_signal/HKU956/400_4s_step_2s.pkl'
         # self.data = r'./processed_signal/HKU956/last15_400_4s_step_2s.pkl'
@@ -96,8 +100,8 @@ class Params(object):
                 # 'auc': AUC().to(self.device)
             }
 
-        self.save_path = '{}_{}_{}_{}_{}_{}_{}'.format(
-            dataset, target, model, valid, lr, batch_size, int(time.time()))
+        self.save_path = '{}_{}_{}_{}_{}_{}_{}_{}'.format(
+            dataset, target, model, valid, lr, batch_size, data_name, int(time.time()))
         if 'output' not in self.save_path:
             self.save_path = os.path.join(r'./output', self.save_path)
         self.k = None

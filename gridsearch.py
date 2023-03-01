@@ -17,17 +17,13 @@ targets = ['valence_label', 'arousal_label']
 all_results = []
 
 for e in data_dict:
-    data_name = os.path.split(e['data'])[-1].replace('.pkl', '')
     data = e['data']
     spliter = e['spliter']
     for targ in targets:
-        args = Params(target=targ, debug=False)
-        args.data = data
-        args.spliter = spliter
-        args.save_path = args.save_path + '_' + data_name
+        args = Params(target=targ, debug=False, data=data, spliter=spliter)
         results = api(args=args)
         all_results.append([args.save_path, results])
-        print('\n\n')
+        print('\n*4')
 
 
 for res in all_results:
