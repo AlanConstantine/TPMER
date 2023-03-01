@@ -105,10 +105,10 @@ class StepRunner:
                 else:
                     pass
                 if self.stage != 'train':
-                    clf_reports.append(classification_report(predicted.cpu().detach().numpy(
-                    ), labels.cpu().detach().numpy(), output_dict=True, zero_division=1))
-                    confu_mat = confusion_matrix(predicted.cpu().detach().numpy(
-                    ), labels.cpu().detach().numpy())
+                    clf_reports.append(classification_report(labels.cpu().detach().numpy(), predicted.cpu().detach().numpy(
+                    ), output_dict=True, zero_division=1))
+                    confu_mat = confusion_matrix(labels.cpu().detach().numpy(), predicted.cpu().detach().numpy(
+                    ), )
         self.results = step_metrics
         if self.stage != 'train':
             clf_reports[-1] = confu_mat
