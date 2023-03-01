@@ -380,5 +380,57 @@ def main():
     print('Avg. result: ', np.mean(avg_res))
 
 
+def api(args):
+    print('\n'.join("%s: %s" % item for item in vars(args).items()))
+
+    spliter = load_model(args.spliter)
+    data = pd.read_pickle(args.data)
+
+    for i, k in enumerate(spliter[args.valid]):
+        st = time.time()
+        args.k = i
+        print("\n" + "=======" * 6 + '[Fold {}]'.format(i), "=======" * 6)
+        train_index = k['train_index']
+        test_index = k['test_index']
+        dataprepare = DataPrepare(args,
+                                  target=args.target,
+                                  data=data,
+                                  train_index=train_index,
+                                  test_index=test_index,
+                                  device=args.device,
+                                  batch_size=args.batch_size)
+        train_dataloader, test_dataloader = dataprepare.get_data()
+        history_df, best_result, final_rep = run(
+            train_dataloader, test_dataloader, args)
+
+        time_used = time.time() - st
+        args.results[args.k] = {
+            'history': history_df,
+            'best_result': best_result,
+            'time_used': time_used,
+            'clf_rep': final_rep
+        }
+        print()
+        print('[Used time: {}s]'.format(round(time_used), 4))
+
+        if args.debug:
+            break
+    if not args.debug:
+        args.save_results(results=args.results)
+
+    print(args.save_path)
+    avg_res = []
+    print(args.results[0]['clf_rep'])
+    for fold in args.results.keys():
+        # if fold == 'valid_clf_report':
+        #     continue
+        print('Fold', fold, 'best result:', args.results[fold]['best_result'],
+              'Time used:', args.results[fold]['time_used'])
+        avg_res.append(args.results[fold]['best_result'][list(
+            args.results[fold]['best_result'].keys())[0]])
+    print('Avg. result: ', np.mean(avg_res))
+    return np.mean(avg_res)
+
+
 if __name__ == '__main__':
     main()
