@@ -31,6 +31,7 @@ import warnings
 from copy import deepcopy
 from representation.SigRepre import MultiSignalRepresentation
 from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
 # warnings.filterwarnings('ignore')
 
 torch.manual_seed(3407)
@@ -81,6 +82,7 @@ class StepRunner:
         # metrics
         step_metrics = {}
         clf_reports = []
+        confu_mat = None
         for name, metric_fn in self.metrics_dict.items():
 
             if self.args.target in ['valence_rating', 'arousal_rating']:
@@ -102,10 +104,13 @@ class StepRunner:
                     #              name] = (predicted == labels).sum().item() / preds.shape[0]
                 else:
                     pass
-                if self.stage != 'train':
-                    clf_reports.append(classification_report(predicted.cpu().detach().numpy(
-                    ), labels.cpu().detach().numpy(), output_dict=True, zero_division=1))
+            if self.stage != 'train':
+                clf_reports.append(classification_report(predicted.cpu().detach().numpy(
+                ), labels.cpu().detach().numpy(), output_dict=True, zero_division=1))
+                confu_mat = confusion_matrix(predicted.cpu().detach().numpy(
+                ), labels.cpu().detach().numpy())
         self.results = step_metrics
+        clf_reports[1] = confu_mat
         return loss.item(), step_metrics, clf_reports
 
     def train_step(self, features, labels):
