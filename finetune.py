@@ -275,19 +275,27 @@ def train_model(args,
 
 
 def run(train_dataloader, test_dataloader, args):
-    model = MultiSignalRepresentation(
-        output_size=40, device=args.device, pretrain=True)
-    model.load_state_dict(torch.load(args.pretrain))
+    model = MER.SignalSample()
+    # model = MultiSignalRepresentation(
+    #     output_size=40, device=args.device, pretrain=True)
+    # model.load_state_dict(torch.load(args.pretrain))
 
-    # loss_fn = nn.BCEWithLogitsLoss()
-    loss_fn = nn.CrossEntropyLoss()
-    mode = 'max'
-    if args.target in ['valence_rating', 'arousal_rating']:
-        loss_fn = nn.MSELoss()
-        mode = "min"
-        model.fcn = MER.MERRegressor()
-    else:
-        model.fcn = MER.MERClassifer(args, 2)
+    # # loss_fn = nn.BCEWithLogitsLoss()
+    # loss_fn = nn.CrossEntropyLoss()
+    # mode = 'max'
+    # if args.target in ['valence_rating', 'arousal_rating']:
+    #     loss_fn = nn.MSELoss()
+    #     mode = "min"
+    #     model.fcn = MER.MERRegressor()
+    # else:
+    #     model.fcn = MER.MERClassifer(args, 2)
+    rep = MultiSignalRepresentation(
+        output_size=40, device=args.device, pretrain=True)
+    rep.load_state_dict(torch.load(
+        r'./output/0.0001_256_maskp0.8_checkpoint.pt'))
+    rep.fcn = MER.MERClassifer(args, 2)
+    model.output_layer = rep
+
     model = model.to(args.device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr)
     scheduler = ReduceLROnPlateau(optimizer,

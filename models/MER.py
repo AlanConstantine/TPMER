@@ -84,3 +84,31 @@ class MERRegressor(nn.Module):
         # output layer
         X = self.hidden3(X)
         return X
+
+
+class SignalSample(nn.Module):
+    def __init__(self, input_size=768) -> None:
+        super().__init__()
+        # input to first hidden layer
+        self.hidden1 = nn.Linear(input_size, 512)
+        kaiming_uniform_(self.hidden1.weight, nonlinearity='relu')
+        self.act1 = nn.ReLU()
+        # second hidden layer
+        self.hidden2 = nn.Linear(512, 400)
+        kaiming_uniform_(self.hidden2.weight, nonlinearity='relu')
+        self.act2 = nn.ReLU()
+        # third hidden layer and output
+        self.output_layer = nn.Linear(32, 1)
+        xavier_uniform_(self.output_layer.weight)
+
+    # forward propagate input
+    def forward(self, X):
+        # input to first hidden layer
+        X = self.hidden1(X)
+        X = self.act1(X)
+        # second hidden layer
+        X = self.hidden2(X)
+        X = self.act2(X)
+        # output layer
+        X = self.output_layer(X)
+        return X
