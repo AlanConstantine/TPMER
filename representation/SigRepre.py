@@ -140,7 +140,7 @@ class SignalEncoder(nn.Module):
         self.inception4 = InceptionTransformer(in_channel=64)
 
         self.fcn = nn.Sequential(nn.Dropout(p=dropout),
-                                 nn.Linear(50, self.output_size),)
+                                 nn.Linear(96, self.output_size),)
 
     def forward(self, x):
         x = self.inception1(x)
@@ -148,6 +148,7 @@ class SignalEncoder(nn.Module):
         x = self.inception3(x)
 
         x = torch.mean(x, 1)  # global average pooling
+        # print(x.shape)
         output = self.fcn(x)
         return output
 
@@ -243,12 +244,12 @@ class ProjectionHead(nn.Module):
 
 class MultiSignalRepresentation(nn.Module):
 
-    def __init__(self, output_size, channel_maskp=0.5, pretrained=False, dropout=0.2, seq=400, maskp=0.8, device=torch.device("cpu")):
+    def __init__(self, output_size, channel_maskp=0.5, pretrained=False, dropout=0.2, seq=400, signal_maskp=0.8, device=torch.device("cpu")):
         super().__init__()
 
         self.seq = seq
         self.output_size = output_size
-        self.signal_maskp = maskp
+        self.signal_maskp = signal_maskp
         self.channel_maskp = channel_maskp
         self.device = device
         self.pretrained = pretrained

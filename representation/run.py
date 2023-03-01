@@ -113,10 +113,11 @@ def run(args,
 def main():
     st = time.time()
     args = Params()
-    dataprepare = DataPrepare(args)
+    dataprepare = DataPrepare(
+        args, datapath=r'../output/all_768_12s_step_2s_sampled.pkl')
     train_dataloader, test_dataloader = dataprepare.get_data()
 
-    model = MultiSignalRepresentation(output_size=40, device=args.device)
+    model = MultiSignalRepresentation(output_size=40, device=args.device, seq=768)
     model = model.to(args.device)
 
     loss_fn = nn.MSELoss()
