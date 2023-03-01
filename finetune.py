@@ -110,7 +110,8 @@ class StepRunner:
                     confu_mat = confusion_matrix(predicted.cpu().detach().numpy(
                     ), labels.cpu().detach().numpy())
         self.results = step_metrics
-        clf_reports[1] = confu_mat
+        if self.stage != 'train':
+            clf_reports[-1] = confu_mat
         return loss.item(), step_metrics, clf_reports
 
     def train_step(self, features, labels):
