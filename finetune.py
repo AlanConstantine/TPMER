@@ -104,11 +104,11 @@ class StepRunner:
                     #              name] = (predicted == labels).sum().item() / preds.shape[0]
                 else:
                     pass
-            if self.stage != 'train':
-                clf_reports.append(classification_report(predicted.cpu().detach().numpy(
-                ), labels.cpu().detach().numpy(), output_dict=True, zero_division=1))
-                confu_mat = confusion_matrix(predicted.cpu().detach().numpy(
-                ), labels.cpu().detach().numpy())
+                if self.stage != 'train':
+                    clf_reports.append(classification_report(predicted.cpu().detach().numpy(
+                    ), labels.cpu().detach().numpy(), output_dict=True, zero_division=1))
+                    confu_mat = confusion_matrix(predicted.cpu().detach().numpy(
+                    ), labels.cpu().detach().numpy())
         self.results = step_metrics
         clf_reports[1] = confu_mat
         return loss.item(), step_metrics, clf_reports
