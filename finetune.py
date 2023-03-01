@@ -280,9 +280,9 @@ def run(train_dataloader, test_dataloader, args):
     #     output_size=40, device=args.device, pretrain=True)
     # model.load_state_dict(torch.load(args.pretrain))
 
-    # # loss_fn = nn.BCEWithLogitsLoss()
-    # loss_fn = nn.CrossEntropyLoss()
-    # mode = 'max'
+    # loss_fn = nn.BCEWithLogitsLoss()
+    loss_fn = nn.CrossEntropyLoss()
+    mode = 'max'
     # if args.target in ['valence_rating', 'arousal_rating']:
     #     loss_fn = nn.MSELoss()
     #     mode = "min"

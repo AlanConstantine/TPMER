@@ -17,7 +17,7 @@ class Params(object):
             self,
             dataset='HKU',
             model='SG',
-            use_cuda=False,
+            use_cuda=True,
             debug=True,
             lr=0.0001,
             # lr=0.0001,
@@ -37,11 +37,13 @@ class Params(object):
             # pretrain=r'./representation/output/0.0001_256_1677293682_maskp0.8/0.0001_256_maskp0.8_checkpoint.pt'
             pretrain=r'./output/0.0001_256_maskp0.8_checkpoint.pt'
     ):
+        self.data = r'./processed_signal/HKU956/772_12s_step_6s.pkl'
 
+        self.spliter = r'./processed_signal/HKU956/772_12s_step_6s_spliter5.pkl'
         # self.data = r'./processed_signal/HKU956/400_4s_step_2s.pkl'
-        self.data = r'./processed_signal/HKU956/last15_400_4s_step_2s.pkl'
+        # self.data = r'./processed_signal/HKU956/last15_400_4s_step_2s.pkl'
 
-        self.spliter = r'./processed_signal/HKU956/last15_400_4s_step_2s_spliter10.pkl'
+        # self.spliter = r'./processed_signal/HKU956/last15_400_4s_step_2s_spliter10.pkl'
 
         if dataset == 'KEC':
             self.data = r'./processed_signal/KEmoCon/KEC_400.pkl'
