@@ -35,7 +35,7 @@ class Params(object):
             init=True,
             show_wei=False,
             data=r'./processed_signal/HKU956/1540_24s_step_2s.pkl',
-            spliter=r'./processed_signal/HKU956/1540_24s_step_2s_spliter5.pkl'
+            spliter=r'./processed_signal/HKU956/1540_24s_step_2s_spliter5.pkl',
             pretrain=r'./representation/output/0.0001_256_1677293682_maskp0.8/0.0001_256_maskp0.8_checkpoint.pt'
             # pretrain=r'./output/0.0001_256_maskp0.8_checkpoint.pt'
     ):
