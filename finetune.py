@@ -275,7 +275,7 @@ def train_model(args,
 
 
 def run(train_dataloader, test_dataloader, args):
-    model = MER.SignalSample()
+    model = MER.SignalSample(input_size=args.input_size)
     # model = MultiSignalRepresentation(
     #     output_size=40, device=args.device, pretrain=True)
     # model.load_state_dict(torch.load(args.pretrain))
@@ -291,8 +291,7 @@ def run(train_dataloader, test_dataloader, args):
     #     model.fcn = MER.MERClassifer(args, 2)
     rep = MultiSignalRepresentation(
         output_size=40, device=args.device, pretrain=True)
-    rep.load_state_dict(torch.load(
-        r'./output/0.0001_256_maskp0.8_checkpoint.pt'))
+    rep.load_state_dict(torch.load(args.pretrain))
     rep.fcn = MER.MERClassifer(args, 2)
     model.output_layer = rep
 
@@ -369,7 +368,7 @@ def main():
 
     print(args.save_path)
     avg_res = []
-    print(args.results[0]['clf_rep'])
+    # print(args.results[0]['clf_rep'])
     for fold in args.results.keys():
         # if fold == 'valid_clf_report':
         #     continue

@@ -18,12 +18,12 @@ class Params(object):
             dataset='HKU',
             model='SG',
             use_cuda=True,
-            debug=True,
+            debug=False,
             lr=0.0001,
             # lr=0.0001,
             epochs=200,
             valid='cv',
-            target='valence',
+            target='valence_label',
             batch_size=256,
             dropout=0.2,
             out_channels=32,
@@ -34,12 +34,13 @@ class Params(object):
         fcn_input=12608,  # Transformer fcn num
             init=True,
             show_wei=False,
-            # pretrain=r'./representation/output/0.0001_256_1677293682_maskp0.8/0.0001_256_maskp0.8_checkpoint.pt'
-            pretrain=r'./output/0.0001_256_maskp0.8_checkpoint.pt'
+            pretrain=r'./representation/output/0.0001_256_1677293682_maskp0.8/0.0001_256_maskp0.8_checkpoint.pt'
+            # pretrain=r'./output/0.0001_256_maskp0.8_checkpoint.pt'
     ):
-        self.data = r'./processed_signal/HKU956/772_12s_step_6s.pkl'
+        self.data = r'./processed_signal/HKU956/1540_24s_step_2s.pkl'
 
-        self.spliter = r'./processed_signal/HKU956/772_12s_step_6s_spliter5.pkl'
+        self.spliter = r'./processed_signal/HKU956/1540_24s_step_2s_spliter5.pkl'
+        self.input_size = int(self.data.split('_')[-4].split('/')[-1]) - 4
         # self.data = r'./processed_signal/HKU956/400_4s_step_2s.pkl'
         # self.data = r'./processed_signal/HKU956/last15_400_4s_step_2s.pkl'
 
