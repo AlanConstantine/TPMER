@@ -17,8 +17,8 @@ class Params(object):
             self,
             dataset='HKU',
             model='SG',
-            use_cuda=True,
-            debug=False,
+            use_cuda=False,
+            debug=True,
             lr=0.0001,
             # lr=0.0001,
             epochs=200,
@@ -33,8 +33,10 @@ class Params(object):
             #  fcn_input=50432,  # LSTM fcn num
         fcn_input=12608,  # Transformer fcn num
             init=True,
-            show_wei=True,
-            pretrain=r'./representation/output/0.0001_256_1677293682_maskp0.8/0.0001_256_maskp0.8_checkpoint.pt'):
+            show_wei=False,
+            # pretrain=r'./representation/output/0.0001_256_1677293682_maskp0.8/0.0001_256_maskp0.8_checkpoint.pt'
+            pretrain=r'./output/0.0001_256_maskp0.8_checkpoint.pt'
+    ):
 
         # self.data = r'./processed_signal/HKU956/400_4s_step_2s.pkl'
         self.data = r'./processed_signal/HKU956/last15_400_4s_step_2s.pkl'

@@ -80,7 +80,7 @@ class StepRunner:
 
         # metrics
         step_metrics = {}
-        best_report = None
+        clf_reports = []
         for name, metric_fn in self.metrics_dict.items():
 
             if self.args.target in ['valence_rating', 'arousal_rating']:
@@ -102,11 +102,11 @@ class StepRunner:
                     #              name] = (predicted == labels).sum().item() / preds.shape[0]
                 else:
                     pass
-                # if self.stage != 'train':
-                #     best_report = classification_report(predicted.cpu().detach().numpy(
-                #     ), labels.cpu().detach().numpy(), output_dict=True, zero_division=1)
+                if self.stage != 'train':
+                    clf_reports.append(classification_report(predicted.cpu().detach().numpy(
+                    ), labels.cpu().detach().numpy(), output_dict=True, zero_division=1))
         self.results = step_metrics
-        return loss.item(), step_metrics, best_report
+        return loss.item(), step_metrics, clf_reports
 
     def train_step(self, features, labels):
         self.net.train()
@@ -139,11 +139,17 @@ class EpochRunner:
             for name in list(self.args.metrics_dict)
         }
 
+        epoch_clf_reports = []
+
         loop = tqdm(enumerate(dataloader),
                     total=len(dataloader),
                     file=sys.stdout)
         for i, batch in loop:
-            loss, step_metrics, best_report = self.steprunner(*batch)
+            loss, step_metrics, clf_reports = self.steprunner(*batch)
+
+            if len(clf_reports) != 0:
+                epoch_clf_reports.append(clf_reports)
+
             step_log = dict({self.stage + "_loss": loss}, **step_metrics)
             total_loss += loss
             step += 1
@@ -164,7 +170,7 @@ class EpochRunner:
 
         epoch_log.update(epoch_metrics)
 
-        return epoch_log
+        return epoch_log, epoch_clf_reports
 
 
 def train_model(args,
@@ -185,6 +191,7 @@ def train_model(args,
     lrs = []
 
     best_result = None
+    best_score_idx = 0
 
     if args.init:
         net.apply(init_xavier)
@@ -199,8 +206,9 @@ def train_model(args,
                                        args=args,
                                        metrics_dict=deepcopy(metrics_dict),
                                        optimizer=optimizer)
-        train_epoch_runner = EpochRunner(train_step_runner, args)
-        train_metrics = train_epoch_runner(train_data)
+        train_epoch_runner = EpochRunner(
+            train_step_runner, args)
+        train_metrics, train_epoch_clf_reports = train_epoch_runner(train_data)
 
         for name, metric in train_metrics.items():
             history[name] = history.get(name, []) + [metric]
@@ -212,9 +220,11 @@ def train_model(args,
                                          stage="val",
                                          loss_fn=loss_fn,
                                          metrics_dict=deepcopy(metrics_dict))
-            val_epoch_runner = EpochRunner(val_step_runner, args)
+            val_epoch_runner = EpochRunner(
+                val_step_runner, args)
             with torch.no_grad():
-                val_metrics = val_epoch_runner(val_data)
+                val_metrics, test_epoch_clf_reports = val_epoch_runner(
+                    val_data)
             val_metrics["epoch"] = epoch
             for name, metric in val_metrics.items():
                 history[name] = history.get(name, []) + [metric]
@@ -232,6 +242,7 @@ def train_model(args,
         arr_scores = history[monitor]
         best_score_idx = np.argmax(arr_scores) if mode == "max" else np.argmin(
             arr_scores)
+
         if best_score_idx == len(arr_scores) - 1:
             print("<<<<<< reach best {0} : {1} >>>>>>".format(
                 monitor, arr_scores[best_score_idx]))
@@ -242,14 +253,16 @@ def train_model(args,
             print(
                 "<<<<<< {} without improvement in {} epoch, early stopping >>>>>>"
                 .format(monitor, patience))
+            print('Current best results', best_result)
             break
         if not args.debug:
-            print('loading best checkpoint:', ckpt_path)
+            # print('loading best checkpoint:', ckpt_path)
             net.load_state_dict(torch.load(ckpt_path))
 
+    test_epoch_clf_reports = test_epoch_clf_reports[best_score_idx]
     history = pd.DataFrame(history)
     history['lr'] = lrs
-    return history, {monitor: best_result}
+    return history, {monitor: best_result}, test_epoch_clf_reports
 
 
 def run(train_dataloader, test_dataloader, args):
@@ -279,7 +292,7 @@ def run(train_dataloader, test_dataloader, args):
                                   eps=1e-08)
     metrics_dict = args.metrics_dict
 
-    history_df, best_result = train_model(
+    history_df, best_result, test_epoch_clf_reports = train_model(
         args,
         model,
         optimizer,
@@ -294,7 +307,7 @@ def run(train_dataloader, test_dataloader, args):
         mode=mode,
         ckpt_path=os.path.join(
             args.save_path, 'fold{}_{}'.format(str(args.k), 'checkpoint.pt')))
-    return history_df, best_result
+    return history_df, best_result, test_epoch_clf_reports
 
 
 def main():
@@ -319,13 +332,15 @@ def main():
                                   device=args.device,
                                   batch_size=args.batch_size)
         train_dataloader, test_dataloader = dataprepare.get_data()
-        history_df, best_result = run(train_dataloader, test_dataloader, args)
+        history_df, best_result, test_epoch_clf_reports = run(
+            train_dataloader, test_dataloader, args)
 
         time_used = time.time() - st
         args.results[args.k] = {
             'history': history_df,
             'best_result': best_result,
-            'time_used': time_used
+            'time_used': time_used,
+            'clf_rep': test_epoch_clf_reports
         }
         print()
         print('[Used time: {}s]'.format(round(time_used), 4))
@@ -337,7 +352,7 @@ def main():
 
     print(args.save_path)
     avg_res = []
-    # print(args.results)
+    print(args.results[-1]['clf_rep'])
     for fold in args.results.keys():
         # if fold == 'valid_clf_report':
         #     continue
