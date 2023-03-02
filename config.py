@@ -17,8 +17,8 @@ class Params(object):
             self,
             dataset='HKU',
             model='SG',
-            use_cuda=True,
-            debug=False,
+            use_cuda=False,
+            debug=True,
             lr=0.0001,
             # lr=0.0001,
             epochs=200,
@@ -36,8 +36,8 @@ class Params(object):
             show_wei=False,
             data=r'./processed_signal/HKU956/1540_24s_step_2s.pkl',
             spliter=r'./processed_signal/HKU956/1540_24s_step_2s_spliter5.pkl',
-            pretrain=r'./representation/output/0.0001_256_1677293682_maskp0.8/0.0001_256_maskp0.8_checkpoint.pt'
-            # pretrain=r'./output/0.0001_256_maskp0.8_checkpoint.pt'
+            # pretrain=r'./representation/output/0.0001_256_1677293682_maskp0.8/0.0001_256_maskp0.8_checkpoint.pt'
+            pretrain=r'./representation/output/rep_0.0001_128_maskp0.8_checkpoint.pt'
     ):
         self.data = data
 
@@ -75,8 +75,8 @@ class Params(object):
         self.target = target
         self.epochs = epochs
         if self.debug:
-            self.epochs = 5
-            self.batch_size = 16
+            self.epochs = 2
+            self.batch_size = 2
         self.lr = lr
 
         self.init = init

@@ -289,10 +289,10 @@ def run(train_dataloader, test_dataloader, args):
     #     model.fcn = MER.MERRegressor()
     # else:
     #     model.fcn = MER.MERClassifer(args, 2)
-    rep = MultiSignalRepresentation(
-        output_size=40, device=args.device, pretrain=True)
+    rep = MultiSignalRepresentation(seq=768,
+                                    output_size=40, device=args.device, pretrained=True)
     rep.load_state_dict(torch.load(args.pretrain))
-    rep.fcn = MER.MERClassifer(args, 2)
+    rep.output_layer = MER.MERClassifer(args, 2)
     model.output_layer = rep
 
     model = model.to(args.device)

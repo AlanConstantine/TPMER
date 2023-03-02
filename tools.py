@@ -234,7 +234,7 @@ class DataPrepare(object):
 
         if self.args.debug:
             xtrain, ytrain, xtest, ytest = xtrain[:
-                                                  1000], ytrain[:1000], xtest[:100], ytest[:100]
+                                                  50], ytrain[:50], xtest[:10], ytest[:10]
 
         print(xtrain.shape, ytrain.shape, xtest.shape, ytest.shape)
         print('Train target distribution')
