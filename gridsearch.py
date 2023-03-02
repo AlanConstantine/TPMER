@@ -24,7 +24,7 @@ for e in data_dict:
     data = e['data']
     spliter = e['spliter']
     for targ in targets:
-        args = Params(target=targ, debug=True, data=data, spliter=spliter)
+        args = Params(target=targ, debug=False, data=data, spliter=spliter, use_cuda=True, batch_size=128)
         results = api(args=args)
         all_results.append([args.save_path, results])
         print('\n\n\n')
