@@ -18,13 +18,13 @@ class Params(object):
             self,
             dataset='HKU',
             model='RP',
-            use_cuda=False,
-            debug=True,
+            use_cuda=True,
+            debug=False,
             lr=0.0001,
             epochs=200,
             valid='loso',
             target='valence',
-            batch_size=8,
+            batch_size=128,
             dropout=0.2,
             init=True,
             show_wei=False,
@@ -53,7 +53,7 @@ class Params(object):
 
         self.dropout = dropout
 
-        self.save_path = './output/{}_{}_{}_maskp{}'.format(
+        self.save_path = './output/rep_{}_{}_{}_maskp{}'.format(
             lr, batch_size, int(time.time()), maskp)
         self.k = None
         self.results = {}

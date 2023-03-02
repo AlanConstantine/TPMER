@@ -41,7 +41,7 @@ class DataPrepare(object):
     def __init__(
             self,
             args,
-            datapath=r'../processed_signal/all_400_4s_step_2s.pkl') -> None:
+            datapath=r'../processed_signal/all_768_12s_step_2s.pkl') -> None:
         self.args = args
         if self.args.debug:
             datapath = r'../processed_signal/all_768_12s_step_2s_sampled.pkl'
