@@ -10,6 +10,7 @@ import os
 import pickle
 import time
 
+torch.cuda.set_device(0)
 
 class Params(object):
 

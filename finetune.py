@@ -295,6 +295,11 @@ def run(train_dataloader, test_dataloader, args):
     rep.output_layer = MER.MERClassifer(args, 2)
     model.output_layer = rep
 
+    # device_ids = [0, 1]
+    # if torch.cuda.device_count() > 1:
+    #     model = torch.nn.DataParallel(model, device_ids=device_ids)
+
+
     model = model.to(args.device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr)
     scheduler = ReduceLROnPlateau(optimizer,
