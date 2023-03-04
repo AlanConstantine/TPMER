@@ -114,14 +114,15 @@ def main():
     st = time.time()
     args = Params()
     dataprepare = DataPrepare(
-        args, datapath=r'../processed_signal/all_384_12s_step_2s.pkl')
+        args, datapath=r'../processed_signal/all_768_12s_step_2s.pkl')
     train_dataloader, test_dataloader = dataprepare.get_data()
 
     model = MultiSignalRepresentation(
-        output_size=40, device=args.device, seq=384)
+        output_size=40, device=args.device, seq=768)
     model = model.to(args.device)
 
-    loss_fn = nn.MSELoss()
+    # loss_fn = nn.MSELoss()
+    loss_fn = nn.HuberLoss()
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr)
     scheduler = ReduceLROnPlateau(optimizer,
                                   mode='min',
