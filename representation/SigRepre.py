@@ -140,7 +140,7 @@ class SignalEncoder(nn.Module):
         self.inception4 = InceptionTransformer(in_channel=64)
 
         self.fcn = nn.Sequential(nn.Dropout(p=dropout),
-                                 nn.Linear(96, self.output_size),)
+                                 nn.Linear(48, self.output_size),)
 
     def forward(self, x):
         x = self.inception1(x)

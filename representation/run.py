@@ -117,7 +117,8 @@ def main():
         args, datapath=r'../processed_signal/all_768_12s_step_2s.pkl')
     train_dataloader, test_dataloader = dataprepare.get_data()
 
-    model = MultiSignalRepresentation(output_size=40, device=args.device, seq=768)
+    model = MultiSignalRepresentation(
+        output_size=40, device=args.device, seq=384)
     model = model.to(args.device)
 
     loss_fn = nn.MSELoss()
