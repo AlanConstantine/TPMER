@@ -114,7 +114,7 @@ def main():
     st = time.time()
     args = Params()
     dataprepare = DataPrepare(
-        args, datapath=r'../processed_signal/all_768_12s_step_2s.pkl')
+        args, datapath=r'../processed_signal/all_384_12s_step_2s.pkl')
     train_dataloader, test_dataloader = dataprepare.get_data()
 
     model = MultiSignalRepresentation(

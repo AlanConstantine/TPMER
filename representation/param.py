@@ -19,7 +19,7 @@ class Params(object):
             dataset='HKU',
             model='RP',
             use_cuda=True,
-            debug=True,
+            debug=False,
             lr=0.0001,
             epochs=200,
             valid='loso',
