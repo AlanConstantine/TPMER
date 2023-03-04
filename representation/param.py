@@ -25,7 +25,7 @@ class Params(object):
             valid='loso',
             target='valence',
             batch_size=128,
-            dropout=0.2,
+            dropout=0.1,
             init=True,
             show_wei=False,
             maskp=0.8):

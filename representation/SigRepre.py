@@ -93,7 +93,7 @@ class InceptionTransformer(nn.Module):
         self.maxpool = nn.MaxPool1d(kernel_size=2)
 
         self.position_encoder = PositionalEncoding(
-            d_model=in_channel, dropout=0.2, max_len=500)
+            d_model=in_channel, dropout=0.1, max_len=500)
 
         self.transformer = BasicTransformer(in_channel=in_channel)
 
@@ -154,7 +154,7 @@ class SignalEncoder(nn.Module):
 
 
 class MultiSignalEncoder(nn.Module):
-    def __init__(self, output_size, dropout=0.2, seq=400) -> None:
+    def __init__(self, output_size, dropout=0.1, seq=400) -> None:
         super().__init__()
         self.seq = seq
 
@@ -192,7 +192,7 @@ class SignalDecoder(nn.Module):
         # self.maskp = maskp
         self.device = device
         self.decoder = TransformerDecoderLayer(
-            d_model=4, nhead=4, dropout=0.2, batch_first=True)
+            d_model=4, nhead=4, dropout=0.1, batch_first=True)
 
     def forward(self, x, tgt):
         # mask = (torch.rand((tgt.shape[0], 4, 400), device=self.device)
@@ -244,7 +244,7 @@ class ProjectionHead(nn.Module):
 
 class MultiSignalRepresentation(nn.Module):
 
-    def __init__(self, output_size, channel_maskp=0.5, pretrained=False, dropout=0.2, seq=400, signal_maskp=0.8, device=torch.device("cpu")):
+    def __init__(self, output_size, channel_maskp=0.5, pretrained=False, dropout=0.1, seq=400, signal_maskp=0.8, device=torch.device("cpu")):
         super().__init__()
 
         self.seq = seq
@@ -300,7 +300,7 @@ class MultiSignalRepresentation(nn.Module):
 
 # class MultiSignalRepresentation(nn.Module):
 
-#     def __init__(self, output_size, dropout=0.2, seq=400, maskp=0.8, device=torch.device("cpu")):
+#     def __init__(self, output_size, dropout=0.1, seq=400, maskp=0.8, device=torch.device("cpu")):
 #         super().__init__()
 
 #         self.seq = seq
@@ -311,7 +311,7 @@ class MultiSignalRepresentation(nn.Module):
 #         self.encoder = MultiEncoder(output_size=self.output_size, seq=self.seq)
 
 #         self.decoder = TransformerDecoderLayer(
-#             d_model=4, nhead=4, dropout=0.2, batch_first=True)
+#             d_model=4, nhead=4, dropout=0.1, batch_first=True)
 
 #     def forward(self, x, tgt):
 #         encoder_outputs = self.encoder(x)
