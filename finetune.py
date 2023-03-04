@@ -32,9 +32,13 @@ from copy import deepcopy
 from representation.SigRepre import MultiSignalRepresentation
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
+import gc
+
 # warnings.filterwarnings('ignore')
 
+torch.cuda.empty_cache()
 torch.manual_seed(3407)
+torch.cuda.set_device(1)
 
 
 def printlog(info):
@@ -173,6 +177,7 @@ class EpochRunner:
                 epoch_log = dict({self.stage + "_loss": epoch_loss},
                                  **epoch_metrics)
                 loop.set_postfix(**epoch_log)
+            gc.collect()
 
         epoch_log.update(epoch_metrics)
 
@@ -297,7 +302,7 @@ def run(train_dataloader, test_dataloader, args):
         model.output_layer = rep
     else:
         model = MultiSignalRepresentation(seq=1536,
-                                          output_size=40, device=args.device, pretrained=False)
+                                          output_size=40, device=args.device, pretrained=True)
         model.output_layer = MER.MERClassifer(args, 2)
 
     loss_fn = nn.CrossEntropyLoss()

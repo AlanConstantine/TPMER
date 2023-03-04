@@ -71,7 +71,7 @@ class Params(object):
         self.show_wei = show_wei
         self.use_cuda = use_cuda
         self.device = torch.device(
-            'cuda' if torch.cuda.is_available() and self.use_cuda else 'cpu')
+            'cuda:0' if torch.cuda.is_available() and self.use_cuda else 'cpu')
         self.batch_size = batch_size
         self.valid = valid
         self.debug = debug
