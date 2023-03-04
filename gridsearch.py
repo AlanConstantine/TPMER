@@ -4,10 +4,10 @@ from tools import *
 import os
 
 data_dict = [
-    {'data': r'./processed_signal/HKU956/1540_24s_step_4s.pkl',
-        'spliter': r'./processed_signal/HKU956/1540_24s_step_4s_spliter5.pkl'},
-    {'data': r'./processed_signal/HKU956/1540_24s_step_8s.pkl',
-        'spliter': r'./processed_signal/HKU956/1540_24s_step_8s_spliter5.pkl'},
+    # {'data': r'./processed_signal/HKU956/1540_24s_step_4s.pkl',
+    #     'spliter': r'./processed_signal/HKU956/1540_24s_step_4s_spliter5.pkl'},
+    # {'data': r'./processed_signal/HKU956/1540_24s_step_8s.pkl',
+    #     'spliter': r'./processed_signal/HKU956/1540_24s_step_8s_spliter5.pkl'},
     {'data': r'./processed_signal/HKU956/1540_24s_step_12s.pkl',
         'spliter': r'./processed_signal/HKU956/1540_24s_step_12s_spliter5.pkl'},
     # {'data': r'./processed_signal/HKU956/772_12s_step_2s.pkl',
@@ -35,7 +35,7 @@ for e in data_dict:
 
     for targ in targets:
         args = Params(target=targ, debug=False, data=data,
-                      spliter=spliter, use_cuda=True, batch_size=128)
+                      spliter=spliter, use_cuda=True, batch_size=32)
         results = api(args=args)
         all_results.append([args.save_path, results])
         print('\n\n\n')

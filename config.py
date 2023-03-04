@@ -12,20 +12,21 @@ import time
 
 torch.cuda.set_device(0)
 
+
 class Params(object):
 
     def __init__(
             self,
             dataset='HKU',
             model='SG',
-            use_cuda=False,
-            debug=True,
+            use_cuda=True,
+            debug=False,
             lr=0.0001,
             # lr=0.0001,
             epochs=200,
             valid='cv',
             target='valence_label',
-            batch_size=256,
+            batch_size=128,
             dropout=0.2,
             out_channels=32,
             hidden_size=64,  # lstm hidden_size
@@ -35,10 +36,11 @@ class Params(object):
         fcn_input=12608,  # Transformer fcn num
             init=True,
             show_wei=False,
-            data=r'./processed_signal/HKU956/1540_24s_step_2s.pkl',
-            spliter=r'./processed_signal/HKU956/1540_24s_step_2s_spliter5.pkl',
+            data=r'./processed_signal/HKU956/1540_24s_step_12s.pkl',
+            spliter=r'./processed_signal/HKU956/1540_24s_step_12s_spliter5.pkl',
+            pretrain=False
             # pretrain=r'./representation/output/0.0001_256_1677293682_maskp0.8/0.0001_256_maskp0.8_checkpoint.pt'
-            pretrain=r'./representation/output/rep_0.0001_128_1677704406_maskp0.8/0.0001_128_maskp0.8_checkpoint.pt'
+            # pretrain=r'./representation/output/rep_0.0001_128_1677704406_maskp0.8/0.0001_128_maskp0.8_checkpoint.pt'
     ):
         self.data = data
 
