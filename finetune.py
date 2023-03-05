@@ -38,7 +38,7 @@ import gc
 
 torch.cuda.empty_cache()
 torch.manual_seed(3407)
-torch.cuda.set_device(1)
+# torch.cuda.set_device(1)
 
 
 def printlog(info):
@@ -301,6 +301,7 @@ def run(train_dataloader, test_dataloader, args):
         rep.output_layer = MER.MERClassifer(args, 2)
         model.output_layer = rep
     else:
+        print('Learning from Scratch......')
         model = MultiSignalRepresentation(seq=1536,
                                           output_size=40, device=args.device, pretrained=True)
         model.output_layer = MER.MERClassifer(args, 2)
