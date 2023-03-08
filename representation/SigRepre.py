@@ -140,7 +140,7 @@ class SignalEncoder(nn.Module):
         self.inception4 = InceptionTransformer(in_channel=64)
 
         self.fcn = nn.Sequential(nn.Dropout(p=dropout),
-                                 nn.Linear(96, self.output_size),)
+                                 nn.Linear(192, self.output_size),)
 
     def forward(self, x):
         x = self.inception1(x)
@@ -290,6 +290,7 @@ class MultiSignalRepresentation(nn.Module):
             masking = self.masking_generator(x.shape[0], x.shape[2])
             x = x * masking
         encoder_outputs = self.encoder(x)
+        print(encoder_outputs.shape)
         output = self.output_layer(encoder_outputs)
         return output
 
