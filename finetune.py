@@ -77,6 +77,7 @@ class StepRunner:
         if self.args.target in ['valence_rating', 'arousal_rating']:
             loss = self.loss_fn(preds, labels.float())
         else:
+            print(preds.shape, labels.long().shape)
             loss = self.loss_fn(preds, labels.long().reshape(-1, ))
 
         if self.stage == "train":
@@ -295,7 +296,7 @@ def run(train_dataloader, test_dataloader, args):
         #     model.fcn = MER.MERRegressor()
         # else:
         #     model.fcn = MER.MERClassifer(args, 2)
-        rep = MultiSignalRepresentation(seq=768,
+        rep = MultiSignalRepresentation(seq=1536,
                                         output_size=40, device=args.device, pretrained=True)
         rep.load_state_dict(torch.load(args.pretrain))
         rep.output_layer = MER.MERClassifer(args, 2)
