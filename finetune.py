@@ -68,8 +68,9 @@ class StepRunner:
         self.sig = nn.Sigmoid()
 
     def step(self, features, labels):
+        print(features.shape)
         preds = self.net(features)
-        # print(preds)
+        print(preds.shape)
 
         if self.optimizer is not None and self.stage == "train":
             self.optimizer.zero_grad()
@@ -283,7 +284,7 @@ def train_model(args,
 def run(train_dataloader, test_dataloader, args):
     model = None
     if args.pretrain:
-        model = MER.SignalSample(input_size=args.input_size)
+        model = MER.SignalSample(input_size=args.input_size, output_size=1536)
         # model = MultiSignalRepresentation(
         #     output_size=40, device=args.device, pretrain=True)
         # model.load_state_dict(torch.load(args.pretrain))

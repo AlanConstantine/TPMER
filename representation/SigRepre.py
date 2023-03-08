@@ -182,7 +182,6 @@ class MultiSignalEncoder(nn.Module):
         encoder_outputs = torch.stack(outputs, 1)
         # output: [batch_size, feature, seq_len]
         # encoder_outputs = encoder_outputs.permute(0, 2, 1)
-
         return encoder_outputs
 
 
@@ -289,9 +288,10 @@ class MultiSignalRepresentation(nn.Module):
             #            <= self.maskp).int()
             masking = self.masking_generator(x.shape[0], x.shape[2])
             x = x * masking
+
         encoder_outputs = self.encoder(x)
-        print(encoder_outputs.shape)
         output = self.output_layer(encoder_outputs)
+
         return output
 
         # encoder_outputs = self.encoder(x)
