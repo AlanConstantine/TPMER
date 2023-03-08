@@ -68,9 +68,7 @@ class StepRunner:
         self.sig = nn.Sigmoid()
 
     def step(self, features, labels):
-        print(features.shape)
         preds = self.net(features)
-        print(preds.shape)
 
         if self.optimizer is not None and self.stage == "train":
             self.optimizer.zero_grad()
@@ -78,7 +76,6 @@ class StepRunner:
         if self.args.target in ['valence_rating', 'arousal_rating']:
             loss = self.loss_fn(preds, labels.float())
         else:
-            print(preds.shape, labels.long().shape)
             loss = self.loss_fn(preds, labels.long().reshape(-1, ))
 
         if self.stage == "train":

@@ -39,8 +39,8 @@ class Params(object):
             data=r'./processed_signal/HKU956/1540_24s_step_12s.pkl',
             spliter=r'./processed_signal/HKU956/1540_24s_step_12s_spliter5.pkl',
             # pretrain=False
-            # pretrain=r'./representation/output/rep_1e-06_32_1678067974_maskp0.8/1e-06_32_maskp0.8_checkpoint.pt'
-            pretrain=r'./representation/output/1e-06_32_maskp0.8_checkpoint.pt'
+            pretrain=r'./representation/output/rep_1e-06_32_1678067974_maskp0.8/1e-06_32_maskp0.8_checkpoint.pt'
+            # pretrain=r'./representation/output/1e-06_32_maskp0.8_checkpoint.pt'
             # pretrain=r'./representation/output/0.0001_256_1677293682_maskp0.8/0.0001_256_maskp0.8_checkpoint.pt'
             # pretrain=r'./representation/output/rep_0.0001_128_1677704406_maskp0.8/0.0001_128_maskp0.8_checkpoint.pt'
     ):
