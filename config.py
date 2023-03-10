@@ -21,7 +21,8 @@ class Params(object):
             model='SG',
             use_cuda=True,
             debug=False,
-            lr=0.00001,
+
+            lr=0.001,
             # lr=0.0001,
             epochs=200,
             valid='cv',
@@ -80,7 +81,7 @@ class Params(object):
         self.target = target
         self.epochs = epochs
         if self.debug:
-            self.epochs = 2
+            self.epochs = 20
             self.batch_size = 2
         self.lr = lr
 

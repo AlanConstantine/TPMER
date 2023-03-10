@@ -16,6 +16,7 @@ from torch.nn import TransformerEncoder, TransformerEncoderLayer
 from torch.optim.lr_scheduler import StepLR, ReduceLROnPlateau
 import torch.optim as optim
 import torch.nn.functional as F
+from torchstat import stat
 from torch import nn
 import torch
 from tqdm import tqdm
@@ -32,6 +33,7 @@ from copy import deepcopy
 from representation.SigRepre import MultiSignalRepresentation
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
+from torchsummary import summary
 import gc
 
 # warnings.filterwarnings('ignore')
@@ -48,6 +50,7 @@ def printlog(info):
 
 
 def init_xavier(m):
+    # nn.init.xavier_normal_(m.weight)
     if type(m) == nn.Linear or type(m) == nn.Conv1d:
         nn.init.xavier_normal_(m.weight)
 
@@ -93,18 +96,12 @@ class StepRunner:
                     preds, labels).item()
             else:
                 _, predicted = torch.max(preds.data, 1)
-                # print(predicted.shape)
                 if name == 'f1':
                     step_metrics[self.stage + "_" + name] = metric_fn(
                         predicted, labels.long().reshape(-1, )).item()
-                # elif name == 'auc':
-                #     step_metrics[self.stage + "_" + name] = metric_fn(
-                #         torch.round(self.sig(preds)).long(), labels).item()
                 elif name == 'acc':
                     step_metrics[self.stage + "_" + name] = metric_fn(
                         predicted, labels.long().reshape(-1, )).item()
-                    # step_metrics[self.stage + "_" +
-                    #              name] = (predicted == labels).sum().item() / preds.shape[0]
                 else:
                     pass
                 if self.stage != 'train':
@@ -246,12 +243,12 @@ def train_model(args,
             scheduler.step(val_metrics['val_loss'])
 
         if args.show_wei:
+            get_parameter_number(net)
             for name, parms in net.named_parameters():
-                if name in ['cnns.0.weight', 'lstm2.bias_hh_l1']:
-                    print('\t', name, torch.mean(parms.data),
-                          parms.requires_grad, torch.mean(parms.grad))
-
-            # 3，early-stopping -------------------------------------------------
+                print('\t', name, torch.mean(parms.data),
+                      parms.requires_grad, torch.mean(parms.grad))
+                break
+        # 3，early-stopping -------------------------------------------------
         arr_scores = history[monitor]
         best_score_idx = np.argmax(arr_scores) if mode == "max" else np.argmin(
             arr_scores)
@@ -269,7 +266,6 @@ def train_model(args,
             print('Current best results', best_result)
             break
         if not args.debug:
-            # print('loading best checkpoint:', ckpt_path)
             net.load_state_dict(torch.load(ckpt_path))
 
     final_rep = final_rep[best_score_idx]
@@ -282,18 +278,6 @@ def run(train_dataloader, test_dataloader, args):
     model = None
     if args.pretrain:
         model = MER.SignalSample(input_size=args.input_size, output_size=1536)
-        # model = MultiSignalRepresentation(
-        #     output_size=40, device=args.device, pretrain=True)
-        # model.load_state_dict(torch.load(args.pretrain))
-
-        # loss_fn = nn.BCEWithLogitsLoss()
-
-        # if args.target in ['valence_rating', 'arousal_rating']:
-        #     loss_fn = nn.MSELoss()
-        #     mode = "min"
-        #     model.fcn = MER.MERRegressor()
-        # else:
-        #     model.fcn = MER.MERClassifer(args, 2)
         rep = MultiSignalRepresentation(seq=1536,
                                         output_size=40, device=args.device, pretrained=True)
         rep.load_state_dict(torch.load(args.pretrain))
@@ -307,11 +291,12 @@ def run(train_dataloader, test_dataloader, args):
 
     loss_fn = nn.CrossEntropyLoss()
     mode = 'max'
-    # device_ids = [0, 1]
-    # if torch.cuda.device_count() > 1:
-    #     model = torch.nn.DataParallel(model, device_ids=device_ids)
 
     model = model.to(args.device)
+
+    # if args.show_wei:
+    #     summary(model, input_size=(4, 1536), batch_size=-1)
+
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr)
     scheduler = ReduceLROnPlateau(optimizer,
                                   mode='min',
@@ -385,8 +370,6 @@ def main():
     print(args.save_path)
     avg_res = []
     for fold in args.results.keys():
-        # if fold == 'valid_clf_report':
-        #     continue
         print('Fold', fold, 'best result:', args.results[fold]['best_result'],
               'Time used:', args.results[fold]['time_used'])
         avg_res.append(args.results[fold]['best_result'][list(
@@ -435,8 +418,6 @@ def api(args):
     print(args.save_path)
     avg_res = []
     for fold in args.results.keys():
-        # if fold == 'valid_clf_report':
-        #     continue
         print('Fold', fold, 'best result:', args.results[fold]['best_result'],
               'Time used:', args.results[fold]['time_used'])
         avg_res.append(args.results[fold]['best_result'][list(

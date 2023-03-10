@@ -4,6 +4,7 @@ data/
 *debug.ipynb
 *nn.ipynb
 *nn copy.ipynb
+*finetune-copy.py
 
 *.pt
 *.xlsx

@@ -12,6 +12,13 @@ from torch.utils.data import (TensorDataset, DataLoader, SequentialSampler,
                               WeightedRandomSampler)
 
 
+def get_parameter_number(model):
+    total_num = sum(p.numel() for p in model.parameters())
+    trainable_num = sum(p.numel()
+                        for p in model.parameters() if p.requires_grad)
+    return print({'Total': total_num, 'Trainable': trainable_num})
+
+
 def parse_res(res):
     score = []
     for fold, his in res.items():
@@ -234,7 +241,7 @@ class DataPrepare(object):
 
         if self.args.debug:
             xtrain, ytrain, xtest, ytest = xtrain[:
-                                                  50], ytrain[:50], xtest[:10], ytest[:10]
+                                                  200], ytrain[:200], xtest[:50], ytest[:50]
 
         print(xtrain.shape, ytrain.shape, xtest.shape, ytest.shape)
         print('Train target distribution')

@@ -33,13 +33,20 @@ class BasicTransformer(nn.Module):
     def __init__(self, in_channel) -> None:
         super().__init__()
 
-        encoder_layer = nn.TransformerEncoderLayer(
-            d_model=in_channel * 4, nhead=4)
-        self.transformer = nn.TransformerEncoder(encoder_layer, num_layers=2)
+        self.encoder_layer = nn.TransformerEncoderLayer(
+            d_model=in_channel * 4, nhead=4, activation='gelu')
+        self.transformer = nn.TransformerEncoder(
+            self.encoder_layer, num_layers=2)
+        self.ln = nn.LayerNorm(in_channel * 4)
+
+        self.position_encoder = PositionalEncoding(
+            d_model=in_channel * 4, dropout=0.1, max_len=768)
 
     def forward(self, x):
+        x = self.position_encoder(x)
         x = self.transformer(x)
-        return F.relu(x, inplace=True)
+        x = self.ln(x)
+        return F.gelu(x)
 
 
 class PositionalEncoding(nn.Module):
@@ -92,10 +99,7 @@ class InceptionTransformer(nn.Module):
 
         self.maxpool = nn.MaxPool1d(kernel_size=2)
 
-        self.position_encoder = PositionalEncoding(
-            d_model=in_channel, dropout=0.1, max_len=500)
-
-        self.transformer = BasicTransformer(in_channel=in_channel)
+        # self.transformer = BasicTransformer(in_channel=in_channel)
 
     def forward(self, x):
         branch1 = self.branch1(x)
@@ -119,8 +123,8 @@ class InceptionTransformer(nn.Module):
 
         x = x.permute(2, 0, 1)  # permute to [seq_len, batch_size, channels]
 
-        # x = self.position_encoder(x) # ablation experiment
-        x = self.transformer(x)  # output [seq_len, batch_size, channels]
+        # x = self.position_encoder(x)  # ablation experiment
+        # x = self.transformer(x)  # output [seq_len, batch_size, channels]
         # permute to [batch_size, channels, seq_len]
         output = x.permute(1, 2, 0)
 
@@ -137,7 +141,7 @@ class SignalEncoder(nn.Module):
         self.inception1 = InceptionTransformer(in_channel=1)
         self.inception2 = InceptionTransformer(in_channel=4)
         self.inception3 = InceptionTransformer(in_channel=16)
-        self.inception4 = InceptionTransformer(in_channel=64)
+        # self.inception4 = InceptionTransformer(in_channel=64)
 
         self.fcn = nn.Sequential(nn.Dropout(p=dropout),
                                  nn.Linear(192, self.output_size),)
@@ -146,9 +150,9 @@ class SignalEncoder(nn.Module):
         x = self.inception1(x)
         x = self.inception2(x)
         x = self.inception3(x)
+        # x = self.inception4(x)
 
         x = torch.mean(x, 1)  # global average pooling
-        # print(x.shape)
         output = self.fcn(x)
         return output
 
