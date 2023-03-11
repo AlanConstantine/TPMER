@@ -127,7 +127,7 @@ def main():
     scheduler = ReduceLROnPlateau(optimizer,
                                   mode='min',
                                   factor=0.5,
-                                  patience=5,
+                                  patience=15,
                                   verbose=True,
                                   threshold_mode='rel',
                                   cooldown=0,
@@ -139,7 +139,7 @@ def main():
                                   optimizer,
                                   scheduler,
                                   loss_fn,
-                                  patience=24,
+                                  patience=41,
                                   train_data=train_dataloader,
                                   val_data=test_dataloader, ckpt_path=args.checkpoint)
     time_used = time.time() - st

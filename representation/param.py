@@ -21,7 +21,7 @@ class Params(object):
             use_cuda=True,
             debug=False,
             lr=0.0001,
-            epochs=200,
+            epochs=1000,
             valid='loso',
             target='valence',
             batch_size=128,

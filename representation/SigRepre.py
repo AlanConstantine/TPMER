@@ -99,7 +99,7 @@ class InceptionTransformer(nn.Module):
 
         self.maxpool = nn.MaxPool1d(kernel_size=2)
 
-        # self.transformer = BasicTransformer(in_channel=in_channel)
+        self.transformer = BasicTransformer(in_channel=in_channel)
 
     def forward(self, x):
         branch1 = self.branch1(x)
@@ -124,7 +124,7 @@ class InceptionTransformer(nn.Module):
         x = x.permute(2, 0, 1)  # permute to [seq_len, batch_size, channels]
 
         # x = self.position_encoder(x)  # ablation experiment
-        # x = self.transformer(x)  # output [seq_len, batch_size, channels]
+        x = self.transformer(x)  # output [seq_len, batch_size, channels]
         # permute to [batch_size, channels, seq_len]
         output = x.permute(1, 2, 0)
 
@@ -313,7 +313,6 @@ class MultiSignalRepresentation(nn.Module):
 
     def forward(self, x):
         if not self.pretrained:
-            print('masked')
             x = self.masking_generator(x)
 
         encoder_outputs = self.encoder(x)
