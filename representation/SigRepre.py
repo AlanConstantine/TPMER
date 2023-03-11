@@ -144,7 +144,7 @@ class SignalEncoder(nn.Module):
         # self.inception4 = InceptionTransformer(in_channel=64)
 
         self.fcn = nn.Sequential(nn.Dropout(p=dropout),
-                                 nn.Linear(192, self.output_size),)
+                                 nn.Linear(96, self.output_size),)
 
     def forward(self, x):
         x = self.inception1(x)
@@ -260,8 +260,6 @@ class MultiSignalRepresentation(nn.Module):
         self.encoder = MultiSignalEncoder(
             output_size=self.output_size, seq=self.seq)
 
-        # self.output_layer = SignalDecoder(
-        #     device=self.device, maskp=self.signal_maskp)
         self.output_layer = ProjectionHead(
             encoder_output=self.output_size, seq=self.seq)
 
@@ -274,24 +272,49 @@ class MultiSignalRepresentation(nn.Module):
         #     nn.Linear(32, 2)
         # )
 
-    def masking_generator(self, batch_size, seq_len):
-        signal_mask = (torch.rand((batch_size, 4, seq_len), device=self.device)
-                       <= self.signal_maskp).int()
-        channel_mask = [np.random.choice(
-            [0, 1], size=4, p=[self.channel_maskp, 1-self.channel_maskp]) for i in range(batch_size)]
-        channel_mask = [mask.tolist() if np.sum(mask) != 0 else [
-            1, 1, 1, 1] for mask in channel_mask]
-        channel_mask = np.asarray([[[i] * seq_len for i in mask]
-                                  for mask in channel_mask]).astype(int)
-        channel_mask = torch.from_numpy(channel_mask).to(device=self.device)
-        return channel_mask * signal_mask
+    def waveform_masking(self, batch_size, channels, seq_len):
+        noise_factor = 0.05
+        synthetic_pattern = np.sin(
+            np.arange(0, seq_len) * 2 * np.pi/(24*64))
+
+        synthetic_pattern = synthetic_pattern / np.max(synthetic_pattern)
+        masked_waveform = noise_factor * \
+            np.random.normal(size=seq_len) + synthetic_pattern
+
+        channels_mask = np.array([masked_waveform for i in range(channels)])
+        batch_mask = np.array([channels_mask for i in range(batch_size)])
+
+        return torch.from_numpy(batch_mask).to(device=self.device)
+
+    def multivariate_masking(self, batch_size, channels, seq_len):
+        multivariate_mask = [np.random.choice(
+            [0, 1], size=channels, p=[self.channel_maskp, 1-self.channel_maskp]) for i in range(batch_size)]
+        multivariate_mask = [mask.tolist() if np.sum(mask) != 0 else [
+            1, 1, 1, 1] for mask in multivariate_mask]
+        multivariate_mask = np.asarray([[[i] * seq_len for i in mask]
+                                        for mask in multivariate_mask]).astype(int)
+        multivariate_mask = torch.from_numpy(
+            multivariate_mask).to(device=self.device).float()
+        return multivariate_mask
+
+    def time_masking(self, batch_size, channels, seq_len):
+        return (torch.rand((batch_size, channels, seq_len), device=self.device)
+                <= self.signal_maskp).int()
+
+    def masking_generator(self, x):
+        batch_size, channels, seq_len = x.shape[0], x.shape[1], x.shape[2]
+        masked_waveform = self.waveform_masking(batch_size, channels, seq_len)
+        masked_multivariate = self.multivariate_masking(
+            batch_size, channels, seq_len)
+        masked_time = self.time_masking(batch_size, channels, seq_len)
+
+        x = ((x + masked_waveform) * masked_multivariate * masked_time).float()
+        return x
 
     def forward(self, x):
         if not self.pretrained:
-            # masking = (torch.rand((x.shape[0], 4, 400), device=self.device)
-            #            <= self.maskp).int()
-            masking = self.masking_generator(x.shape[0], x.shape[2])
-            x = x * masking
+            print('masked')
+            x = self.masking_generator(x)
 
         encoder_outputs = self.encoder(x)
         output = self.output_layer(encoder_outputs)
