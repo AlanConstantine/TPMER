@@ -297,7 +297,8 @@ def run(train_dataloader, test_dataloader, args):
     # if args.show_wei:
     #     summary(model, input_size=(4, 1536), batch_size=-1)
 
-    optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr)
+    optimizer = torch.optim.AdamW(
+        model.parameters(), lr=args.lr, weight_decay=1e-4)
     scheduler = ReduceLROnPlateau(optimizer,
                                   mode='min',
                                   factor=0.5,

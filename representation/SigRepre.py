@@ -26,7 +26,7 @@ class BasicConv1d(nn.Module):
     def forward(self, x):
         x = self.conv(x)
         x = self.bn(x)
-        return F.relu(x, inplace=True)
+        return F.leaky_relu(x, inplace=True)
 
 
 class BasicTransformer(nn.Module):
@@ -95,7 +95,7 @@ class InceptionTransformer(nn.Module):
         )
 
         self.branch4 = nn.Sequential(nn.MaxPool1d(kernel_size=3, stride=1),
-                                     nn.ReLU())
+                                     nn.LeakyReLU())
 
         self.maxpool = nn.MaxPool1d(kernel_size=2)
 
@@ -215,20 +215,20 @@ class ProjectionHead(nn.Module):
         super().__init__()
         self.hidden1 = nn.Linear(encoder_output, 128)
         kaiming_uniform_(self.hidden1.weight, nonlinearity='relu')
-        self.act1 = nn.ReLU()
+        self.act1 = nn.LeakyReLU()
         # second hidden layer
         self.hidden2 = nn.Linear(128, 256)
         kaiming_uniform_(self.hidden2.weight, nonlinearity='relu')
-        self.act2 = nn.ReLU()
+        self.act2 = nn.LeakyReLU()
         # third hidden layer and output
         self.hidden3 = nn.Linear(256, seq)
         xavier_uniform_(self.hidden3.weight)
         # self.fcn = nn.Sequential(
         #     nn.Linear(encoder_output, 128),
-        #     nn.ReLU(),
+        #     nn.LeakyReLU(),
         #     nn.Dropout(p=0.2),
         #     nn.Linear(128, 256),
-        #     nn.ReLU(),
+        #     nn.LeakyReLU(),
         #     nn.Linear(256, seq)
         # )
         # kaiming_uniform_(self.fcn.weight, nonlinearity='relu')
@@ -265,10 +265,10 @@ class MultiSignalRepresentation(nn.Module):
 
         # self.fcn = nn.Sequential(
         #     nn.Linear(output_size, 128),
-        #     nn.ReLU(),
+        #     nn.LeakyReLU(),
         #     nn.Dropout(p=0.2),
         #     nn.Linear(128, 32),
-        #     nn.ReLU(),
+        #     nn.LeakyReLU(),
         #     nn.Linear(32, 2)
         # )
 
