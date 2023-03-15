@@ -20,15 +20,15 @@ class Params(object):
             model='RP',
             use_cuda=True,
             debug=False,
-            lr=0.0001,
+            lr=0.00001,
             epochs=1000,
             valid='loso',
             target='valence',
-            batch_size=128,
+            batch_size=32,
             dropout=0.1,
             init=True,
             show_wei=False,
-            maskp=0.8):
+            maskp=0.5):
 
         self.model = model
 

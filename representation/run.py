@@ -113,12 +113,14 @@ def run(args,
 def main():
     st = time.time()
     args = Params()
+    datapath = r'../processed_signal/all_1536_24s_step_2s.pkl'
+    print(datapath)
     dataprepare = DataPrepare(
-        args, datapath=r'../processed_signal/all_768_12s_step_2s.pkl')
+        args, datapath=datapath)
     train_dataloader, test_dataloader = dataprepare.get_data()
 
     model = MultiSignalRepresentation(
-        output_size=40, device=args.device, seq=768)
+        output_size=40, device=args.device, seq=1536)
     model = model.to(args.device)
 
     # loss_fn = nn.MSELoss()
@@ -127,7 +129,7 @@ def main():
     scheduler = ReduceLROnPlateau(optimizer,
                                   mode='min',
                                   factor=0.5,
-                                  patience=15,
+                                  patience=32,
                                   verbose=True,
                                   threshold_mode='rel',
                                   cooldown=0,
@@ -139,7 +141,7 @@ def main():
                                   optimizer,
                                   scheduler,
                                   loss_fn,
-                                  patience=41,
+                                  patience=64,
                                   train_data=train_dataloader,
                                   val_data=test_dataloader, ckpt_path=args.checkpoint)
     time_used = time.time() - st
@@ -149,7 +151,7 @@ def main():
     if not args.debug:
         history_df.to_csv(
             os.path.join(args.save_path, 'history_df.csv'), index=False)
-
+    print(datapath)
     print(args.save_path)
 
 

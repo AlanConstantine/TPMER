@@ -214,11 +214,11 @@ class ProjectionHead(nn.Module):
     def __init__(self, encoder_output, seq) -> None:
         super().__init__()
         self.hidden1 = nn.Linear(encoder_output, 128)
-        kaiming_uniform_(self.hidden1.weight, nonlinearity='relu')
+        kaiming_uniform_(self.hidden1.weight, nonlinearity='leaky_relu')
         self.act1 = nn.LeakyReLU()
         # second hidden layer
         self.hidden2 = nn.Linear(128, 256)
-        kaiming_uniform_(self.hidden2.weight, nonlinearity='relu')
+        kaiming_uniform_(self.hidden2.weight, nonlinearity='leaky_relu')
         self.act2 = nn.LeakyReLU()
         # third hidden layer and output
         self.hidden3 = nn.Linear(256, seq)
