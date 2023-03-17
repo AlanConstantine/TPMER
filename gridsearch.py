@@ -20,8 +20,8 @@ data_dict = [
     #     'spliter': r'./processed_signal/HKU956/772_12s_step_6s_spliter5.pkl'},
 ]
 
-# targets = ['valence_label', 'arousal_label']
-targets = ['valence_label']
+targets = ['valence_label', 'arousal_label']
+# targets = ['valence_label']
 
 all_results = []
 
@@ -35,9 +35,9 @@ for e in data_dict:
     ######
 
     for targ in targets:
-        args = Params(target=targ, debug=True, data=data,
+        args = Params(target=targ, debug=False, data=data,
                       #   lr=0.05,
-                      spliter=spliter, use_cuda=True, batch_size=4, pretrain=False, show_wei=True)
+                      spliter=spliter, use_cuda=True, batch_size=128, pretrain=True, show_wei=True)
         results = api(args=args)
         all_results.append([args.save_path, results])
         print('\n\n\n')
