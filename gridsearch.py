@@ -4,18 +4,18 @@ from tools import *
 import os
 
 data_dict = [
-    # {'data': r'./processed_signal/HKU956/1540_24s_step_4s.pkl',
-    #     'spliter': r'./processed_signal/HKU956/1540_24s_step_4s_spliter5.pkl'},
+    {'data': r'./processed_signal/HKU956/1540_24s_step_2s.pkl',
+        'spliter': r'./processed_signal/HKU956/1540_24s_step_2s_spliter5.pkl'},
     # {'data': r'./processed_signal/HKU956/1540_24s_step_8s.pkl',
     #     'spliter': r'./processed_signal/HKU956/1540_24s_step_8s_spliter5.pkl'},
-    {'data': r'./processed_signal/HKU956/1540_24s_step_12s.pkl',
-        'spliter': r'./processed_signal/HKU956/1540_24s_step_12s_spliter5.pkl'},
-    # {'data': r'./processed_signal/HKU956/772_12s_step_2s.pkl',
-    #     'spliter': r'./processed_signal/HKU956/772_12s_step_2s_spliter5.pkl'},
-    # {'data': r'./processed_signal/HKU956/516_8s_step_2s.pkl',
-    #     'spliter': r'./processed_signal/HKU956/516_8s_step_2s_spliter5.pkl'},
-    # {'data': r'./processed_signal/HKU956/260_4s_step_2s.pkl',
-    #     'spliter': r'./processed_signal/HKU956/260_4s_step_2s_spliter5.pkl'},
+    # {'data': r'./processed_signal/HKU956/1540_24s_step_12s.pkl',
+    #     'spliter': r'./processed_signal/HKU956/1540_24s_step_12s_spliter5.pkl'},
+    {'data': r'./processed_signal/HKU956/772_12s_step_2s.pkl',
+        'spliter': r'./processed_signal/HKU956/772_12s_step_2s_spliter5.pkl'},
+    {'data': r'./processed_signal/HKU956/516_8s_step_2s.pkl',
+        'spliter': r'./processed_signal/HKU956/516_8s_step_2s_spliter5.pkl'},
+    {'data': r'./processed_signal/HKU956/260_4s_step_2s.pkl',
+        'spliter': r'./processed_signal/HKU956/260_4s_step_2s_spliter5.pkl'},
     # {'data': r'./processed_signal/HKU956/772_12s_step_6s.pkl',
     #     'spliter': r'./processed_signal/HKU956/772_12s_step_6s_spliter5.pkl'},
 ]
