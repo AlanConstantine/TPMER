@@ -37,7 +37,7 @@ for e in data_dict:
     for targ in targets:
         args = Params(target=targ, debug=False, data=data,
                       #   lr=0.05,
-                      spliter=spliter, use_cuda=True, batch_size=32, show_wei=True)
+                      spliter=spliter, use_cuda=True, batch_size=32, show_wei=False)
         results = api(args=args)
         all_results.append([args.save_path, results])
         print('\n\n\n')
