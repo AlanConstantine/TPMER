@@ -70,7 +70,21 @@ class StepRunner:
         self.results = None
         self.sig = nn.Sigmoid()
 
+    def ablation_mask(self, features):
+        batch_size, channels, seq_len = features.shape[0], features.shape[1], features.shape[2]
+        masked = np.zeros(channels)
+        masked[self.args.abla] = 1
+        abl_mask = np.array([masked for i in range(batch_size)])
+        abl_mask = np.asarray([[[i] * seq_len for i in mask]
+                               for mask in abl_mask]).astype(int)
+        abl_mask = torch.from_numpy(
+            abl_mask).to(device=self.args.device).float()
+        # print((features * abl_mask).mean(axis=2).mean(axis=0))
+        return features * abl_mask
+
     def step(self, features, labels):
+        if self.args.abla is not None:
+            features = self.ablation_mask(features)
         preds = self.net(features)
 
         if self.optimizer is not None and self.stage == "train":
