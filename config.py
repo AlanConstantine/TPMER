@@ -106,9 +106,13 @@ class Params(object):
                 'acc': Accuracy(task='binary', num_classes=2).to(self.device),
                 # 'auc': AUC().to(self.device)
             }
-
-        self.save_path = '{}_{}_{}_{}_{}_{}_{}_{}'.format(
-            dataset, target, model, valid, lr, batch_size, data_name, int(time.time()))
+        signal_match = {0: 'bvp', 1: 'eda', 2: 'temp', 3: 'hr'}
+        if self.abla is not None:
+            self.save_path = '{}_{}_{}_{}_{}_{}_{}'.format(
+                signal_match[self.abla], target, valid, lr, batch_size, data_name, int(time.time()))
+        else:
+            self.save_path = '{}_{}_{}_{}_{}_{}'.format(
+                target, valid, lr, batch_size, data_name, int(time.time()))
         if 'output' not in self.save_path:
             self.save_path = os.path.join(r'./output', self.save_path)
         self.k = None
