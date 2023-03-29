@@ -30,7 +30,9 @@ import sys
 import time
 import warnings
 from copy import deepcopy
-from representation.SigRepre import MultiSignalRepresentation
+# from representation.SigRepre import MultiSignalRepresentation
+from representation.PhySiRES import MultiSignalRepresentation
+
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from torchsummary import summary
