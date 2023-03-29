@@ -302,7 +302,7 @@ def run(train_dataloader, test_dataloader, args):
         model.output_layer = rep
     else:
         print('Learning from Scratch......')
-        model = CNNBiLSTM(args)
+        model = CNNBiLSTM.CNNBiLSTM(args)
         # model = MultiSignalRepresentation(seq=1536,
         #                                   output_size=40, device=args.device, pretrained=True)
         # model.output_layer = MER.MERClassifer(args, 2)
