@@ -20,10 +20,10 @@ class Params(object):
             dataset='HKU',
             model='SG',
             use_cuda=True,
-            debug=True,
+            debug=False,
+            abla=0,
             lr=0.00001,
             # lr=0.0001,
-            abla=0,
             epochs=200,
             valid='cv',
             target='valence_label',
@@ -34,7 +34,7 @@ class Params(object):
             nlayers=2,  # transformer or lstm layer num
             nhead=4,  # transformer head num
             #  fcn_input=50432,  # LSTM fcn num
-            fcn_input=12608,  # Transformer fcn num
+        fcn_input=12608,  # Transformer fcn num
             init=True,
             show_wei=False,
             data=r'./processed_signal/HKU956/1540_24s_step_12s.pkl',
@@ -46,7 +46,6 @@ class Params(object):
             # pretrain=r'./representation/output/rep_0.0001_128_1677704406_maskp0.8/0.0001_128_maskp0.8_checkpoint.pt'
     ):
         self.data = data
-        self.abla = abla
 
         self.spliter = spliter
 
@@ -96,6 +95,8 @@ class Params(object):
 
         self.nlayers = nlayers
         self.nhead = nhead
+
+        self.abla = abla
 
         self.metrics_dict = {}
         if self.target in ['valence_rating', 'arousal_rating']:

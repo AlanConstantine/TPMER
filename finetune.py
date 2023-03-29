@@ -316,7 +316,7 @@ def run(train_dataloader, test_dataloader, args):
     scheduler = ReduceLROnPlateau(optimizer,
                                   mode='min',
                                   factor=0.5,
-                                  patience=5,
+                                  patience=3,
                                   verbose=True,
                                   threshold_mode='rel',
                                   cooldown=0,
