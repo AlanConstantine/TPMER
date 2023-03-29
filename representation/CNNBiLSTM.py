@@ -19,20 +19,20 @@ class CNNBiLSTM(nn.Module):
         )
 
         self.lstm1 = nn.LSTM(input_size=4,
-                             hidden_size=64,
+                             hidden_size=32,
                              num_layers=8, batch_first=True,
                              bidirectional=True
                              )
 
-        self.lstm2 = nn.LSTM(input_size=64 * 2,
-                             hidden_size=256,
-                             num_layers=8, batch_first=True,
+        self.lstm2 = nn.LSTM(input_size=64,
+                             hidden_size=16,
+                             num_layers=2, batch_first=True,
                              bidirectional=True
                              )
 
         self.fcn = nn.Sequential(
             nn.Dropout(p=0.2),
-            nn.Linear(256, 128),
+            nn.Linear(24384, 128),
             nn.ReLU(),
             nn.Dropout(p=0.2),
             nn.Linear(128, 32),
@@ -47,9 +47,11 @@ class CNNBiLSTM(nn.Module):
         x = self.cnns(x)  # output [batch_size, channels, seq_len]
         x = x.permute(0, 2, 1)
         x, _ = self.lstm1(x)  # output [batch_size, seq_len, Hin]
+        print(x.shape)
         x = F.relu(x)
         x, _ = self.lstm2(x)  # output [batch_size, seq_len, Hin]
         x = F.relu(x)
+        print(x.shape)
         x = x.flatten(start_dim=1)
         output = self.fcn(x)
         return output

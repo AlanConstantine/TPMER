@@ -32,6 +32,7 @@ import warnings
 from copy import deepcopy
 # from representation.SigRepre import MultiSignalRepresentation
 from representation.PhySiRES import MultiSignalRepresentation
+from representation import CNNBiLSTM
 
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
@@ -301,9 +302,10 @@ def run(train_dataloader, test_dataloader, args):
         model.output_layer = rep
     else:
         print('Learning from Scratch......')
-        model = MultiSignalRepresentation(seq=1536,
-                                          output_size=40, device=args.device, pretrained=True)
-        model.output_layer = MER.MERClassifer(args, 2)
+        model = CNNBiLSTM(args)
+        # model = MultiSignalRepresentation(seq=1536,
+        #                                   output_size=40, device=args.device, pretrained=True)
+        # model.output_layer = MER.MERClassifer(args, 2)
 
     loss_fn = nn.CrossEntropyLoss()
     mode = 'max'

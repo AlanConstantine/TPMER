@@ -163,16 +163,25 @@ class SignalEncoder(nn.Module):
         self.inception4 = InceptionTransformer(in_channel=64)
 
         self.fcn = nn.Sequential(
-                                #  nn.Dropout(p=dropout),
-                                 nn.Linear(int(self.seq / (2**4)), self.output_size),)
+            #  nn.Dropout(p=dropout),
+            nn.Linear(int(self.seq / (2**4)), self.output_size),)
 
     def forward(self, x):
         x = self.inception1(x)
+        print('pre', x.shape)
+
         x = self.inception2(x)
+        print('pre', x.shape)
+
         x = self.inception3(x)
+        print('pre', x.shape)
+
         x = self.inception4(x)
 
+        print('pre', x.shape)
+
         x = torch.mean(x, 1)  # global average pooling
+        print('post', x.shape)
         output = self.fcn(x)
         return output
 
