@@ -134,15 +134,7 @@ class InceptionTransformer(nn.Module):
         maxlen = max(branch1.shape[2], branch2.shape[2],
                      branch3.shape[2], branch4.shape[2])
 
-        # branch1 = F.pad(input=branch1, pad=(0, maxlen - branch1.shape[2]))
-        # branch2 = F.pad(input=branch2, pad=(0, maxlen - branch2.shape[2]))
-        # branch3 = F.pad(input=branch3, pad=(0, maxlen - branch3.shape[2]))
         branch4 = F.pad(input=branch4, pad=(0, maxlen - branch4.shape[2]))
-
-        # print('branch1', branch1.shape)
-        # print('branch2', branch2.shape)
-        # print('branch3', branch3.shape)
-        # print('branch4', branch4.shape)
 
         x = torch.cat([branch1, branch2, branch3, branch4], 1)
         x = self.maxpool(x)
