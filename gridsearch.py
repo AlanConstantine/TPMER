@@ -42,7 +42,7 @@ for val in ['cv', 'loso']:
             args = Params(target=targ, debug=False, data=data, abla=None, valid=val,        
                           pretrain=None,
                           lr=0.001,
-                          spliter=spliter, use_cuda=True, batch_size=128, show_wei=True)
+                          spliter=spliter, use_cuda=True, batch_size=32, show_wei=True)
             results = api(args=args)
             all_results.append([args.save_path, results])
             print('\n\n\n')

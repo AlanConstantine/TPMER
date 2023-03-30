@@ -121,7 +121,7 @@ class InceptionTransformer(nn.Module):
         self.transformer = BasicTransformer(in_channel=in_channel)
 
     def forward(self, x):
-        identity = x
+        # identity = x
 
         branch1 = self.branch1(x)
 
@@ -172,10 +172,8 @@ class SignalEncoder(nn.Module):
         x = self.inception3(x)
         x = self.inception4(x)
 
-        print('pre', x.shape)
 
         x = torch.mean(x, 1)  # global average pooling
-        print('post', x.shape)
         output = self.fcn(x)
         return output
 
