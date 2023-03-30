@@ -103,7 +103,7 @@ class Params(object):
             self.metrics_dict = {'mse': MeanSquaredError().to(self.device)}
         else:
             self.metrics_dict = {
-                'f1': F1Score(task='binary', average='macro', num_classes=2).to(self.device),
+                'f1': F1Score(average='macro').to(self.device),
                 'acc': Accuracy(task='binary', num_classes=2).to(self.device),
                 # 'auc': AUC().to(self.device)
             }
