@@ -101,11 +101,15 @@ class Params(object):
         self.metrics_dict = {}
         if self.target in ['valence_rating', 'arousal_rating']:
             self.metrics_dict = {'mse': MeanSquaredError().to(self.device)}
+        elif self.target in ['valence_label', 'arousal_label']:
+            self.metrics_dict = {
+                'f1': F1Score(task='binary', average='macro', num_classes=2).to(self.device),
+                'acc': Accuracy(task='binary', num_classes=2).to(self.device),
+            }
         else:
             self.metrics_dict = {
-                'f1': F1Score(average='macro').to(self.device),
-                'acc': Accuracy(task='binary', num_classes=2).to(self.device),
-                # 'auc': AUC().to(self.device)
+                'f1': F1Score(average='macro', num_classes=4).to(self.device),
+                'acc': Accuracy(num_classes=4).to(self.device),
             }
         signal_match = {0: 'bvp', 1: 'eda', 2: 'temp', 3: 'hr'}
         if self.abla is not None:
