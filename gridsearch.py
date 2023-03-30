@@ -6,8 +6,8 @@ import os
 data_dict = [
     # {'data': r'./processed_signal/HKU956/1540_24s_step_2s.pkl',
     #     'spliter': r'./processed_signal/HKU956/1540_24s_step_2s_spliter5.pkl'},
-    {'data': r'./processed_signal/HKU956/1540_24s_step_4s.pkl',
-        'spliter': r'./processed_signal/HKU956/1540_24s_step_4s_spliter10.pkl'},
+    {'data': r'./processed_signal/HKU956/956_1540_24s_step_12s.pkl',
+        'spliter': r'./processed_signal/HKU956/956_1540_24s_step_12s_spliter5.pkl'},
     # {'data': r'./processed_signal/HKU956/1540_24s_step_8s.pkl',
     #     'spliter': r'./processed_signal/HKU956/1540_24s_step_8s_spliter5.pkl'},
     # {'data': r'./processed_signal/HKU956/1540_24s_step_12s.pkl',
@@ -37,9 +37,9 @@ for val in ['cv', 'loso']:
         ######
 
         for targ in targets:
-            args = Params(target=targ, debug=False, data=data, abla=None, valid=val, pretrain=None,
-                        #   lr=0.05,
-                        spliter=spliter, use_cuda=True, batch_size=32, show_wei=False)
+            args = Params(target=targ, debug=False, data=data, abla=None, valid=val,        pretrain=None,
+                          lr=0.01,
+                          spliter=spliter, use_cuda=True, batch_size=64, show_wei=True)
             results = api(args=args)
             all_results.append([args.save_path, results])
             print('\n\n\n')

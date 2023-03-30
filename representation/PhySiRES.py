@@ -168,14 +168,8 @@ class SignalEncoder(nn.Module):
 
     def forward(self, x):
         x = self.inception1(x)
-        print('pre', x.shape)
-
         x = self.inception2(x)
-        print('pre', x.shape)
-
         x = self.inception3(x)
-        print('pre', x.shape)
-
         x = self.inception4(x)
 
         print('pre', x.shape)

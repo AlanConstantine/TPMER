@@ -37,8 +37,8 @@ class Params(object):
         fcn_input=12608,  # Transformer fcn num
             init=True,
             show_wei=False,
-            data=r'./processed_signal/HKU956/1540_24s_step_12s.pkl',
-            spliter=r'./processed_signal/HKU956/1540_24s_step_12s_spliter5.pkl',
+            data=r'./processed_signal/HKU956/956_1540_24s_step_12s.pkl',
+            spliter=r'./processed_signal/HKU956/956_1540_24s_step_12s_spliter5.pkl',
             # pretrain=False
             pretrain=r'./representation/output/rep_1e-06_32_1678891169_maskp0.5/1e-06_32_maskp0.5_checkpoint.pt'
             # pretrain=r'./representation/output/1e-06_32_maskp0.8_checkpoint.pt'
