@@ -293,19 +293,22 @@ def train_model(args,
 
 def run(train_dataloader, test_dataloader, args):
     model = None
+    n_class = 2
+    if args.target == '4d':
+        n_class = 4
     if args.pretrain:
         model = MER.SignalSample(input_size=args.input_size, output_size=1536)
         rep = MultiSignalRepresentation(seq=1536,
                                         output_size=40, device=args.device, pretrained=True)
         rep.load_state_dict(torch.load(args.pretrain))
-        rep.output_layer = MER.MERClassifer(args, 2)
+        rep.output_layer = MER.MERClassifer(args, n_class)
         model.output_layer = rep
     else:
         print('Learning from Scratch......')
-        model = CNNBiLSTM.CNNBiLSTM(args)
-        # model = MultiSignalRepresentation(seq=1536,
-        #                                   output_size=40, device=args.device, pretrained=True)
-        # model.output_layer = MER.MERClassifer(args, 2)
+        # model = CNNBiLSTM.CNNBiLSTM(args)
+        model = MultiSignalRepresentation(seq=1536,
+                                          output_size=40, device=args.device, pretrained=True)
+        model.output_layer = MER.MERClassifer(args, n_class)
 
     loss_fn = nn.CrossEntropyLoss()
     mode = 'max'
