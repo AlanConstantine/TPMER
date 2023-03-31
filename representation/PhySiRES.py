@@ -172,7 +172,6 @@ class SignalEncoder(nn.Module):
         x = self.inception3(x)
         x = self.inception4(x)
 
-
         x = torch.mean(x, 1)  # global average pooling
         output = self.fcn(x)
         return output

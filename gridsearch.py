@@ -41,10 +41,10 @@ for val in ['cv', 'loso']:
         ######
 
         for targ in targets:
-            args = Params(target=targ, debug=True, data=data, abla=None, valid=val,
+            args = Params(target=targ, debug=False, data=data, abla=None, valid=val,
                           pretrain=None,
                           lr=0.001,
-                          spliter=spliter, use_cuda=True, batch_size=32, show_wei=True)
+                          spliter=spliter, use_cuda=True, batch_size=32, show_wei=False)
             results = api(args=args)
             all_results.append([args.save_path, results])
             print('\n\n\n')

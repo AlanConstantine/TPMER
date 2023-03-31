@@ -7,7 +7,9 @@
 from param import Params
 from tools import *
 
-from SigRepre import MultiSignalRepresentation
+# from SigRepre import MultiSignalRepresentation
+from PhySiRES import MultiSignalRepresentation
+
 
 from torch.nn import TransformerEncoder, TransformerEncoderLayer
 from torch.optim.lr_scheduler import StepLR, ReduceLROnPlateau
@@ -123,9 +125,9 @@ def main():
         output_size=40, device=args.device, seq=1536)
     model = model.to(args.device)
 
-    # loss_fn = nn.MSELoss()
     loss_fn = nn.HuberLoss()
-    optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr)
+    optimizer = torch.optim.AdamW(
+        model.parameters(), lr=args.lr, weight_decay=0.0001)
     scheduler = ReduceLROnPlateau(optimizer,
                                   mode='min',
                                   factor=0.5,
