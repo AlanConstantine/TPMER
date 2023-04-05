@@ -229,6 +229,7 @@ def train_model(args,
             break
         if not args.debug:
             net.load_state_dict(torch.load(ckpt_path))
+            print('loaded', ckpt_path)
 
     history = pd.DataFrame(history)
     history['lr'] = lrs
