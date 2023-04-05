@@ -20,7 +20,7 @@ class Params(object):
             model='RP',
             use_cuda=True,
             debug=False,
-            lr=0.00001,
+            lr=0.000001,
             epochs=1000,
             valid='loso',
             target='valence',

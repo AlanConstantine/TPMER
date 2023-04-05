@@ -131,7 +131,7 @@ def main():
     scheduler = ReduceLROnPlateau(optimizer,
                                   mode='min',
                                   factor=0.5,
-                                  patience=32,
+                                  patience=10,
                                   verbose=True,
                                   threshold_mode='rel',
                                   cooldown=0,
