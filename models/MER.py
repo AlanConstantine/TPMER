@@ -3,7 +3,6 @@ from torch import nn
 import torch.nn.functional as F
 from torch.nn.init import kaiming_uniform_
 from torch.nn.init import xavier_uniform_
-from representation.SigRepre import MultiSignalRepresentation
 
 
 class MERClassifer(nn.Module):
