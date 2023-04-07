@@ -115,6 +115,9 @@ class StepRunner:
                 _, predicted = torch.max(preds.data, 1)
                 if name == 'f1':
                     step_metrics[self.stage + "_" + name] = metric_fn(
+                        predicted, labels.long().reshape(-1, ))
+                elif name == 'tf1':
+                    step_metrics[self.stage + "_" + name] = metric_fn(
                         predicted, labels.long().reshape(-1, )).item()
                 elif name == 'acc':
                     step_metrics[self.stage + "_" + name] = metric_fn(

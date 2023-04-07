@@ -24,7 +24,7 @@ class SKF1(object):
         y_pred = y_pred.cpu().detach().numpy()
         skf1 = f1_score(y_true, y_pred, average=self.average,
                         zero_division=self.zero_division)
-        return torch.tensor(skf1)
+        return skf1
 
 
 class Params(object):
@@ -117,8 +117,9 @@ class Params(object):
             self.metrics_dict = {'mse': MeanSquaredError().to(self.device)}
         elif self.target in ['valence_label', 'arousal_label']:
             self.metrics_dict = {
-                'f1': F1Score(task='binary', average='macro', num_classes=2).to(self.device),
+                'tf1': F1Score(task='binary', average='macro', num_classes=2).to(self.device),
                 'acc': Accuracy(task='binary', num_classes=2).to(self.device),
+                'f1': SKF1()
             }
         else:
             self.metrics_dict = {
