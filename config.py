@@ -4,6 +4,7 @@
 
 from torchmetrics import F1Score, Accuracy
 from torchmetrics import MeanSquaredError
+from sklearn.metrics import f1_score
 import torch
 from torch import nn
 import os
@@ -11,6 +12,19 @@ import pickle
 import time
 
 torch.cuda.set_device(0)
+
+
+class SKF1(object):
+    def __init__(self, average='macro', zero_division=1) -> None:
+        self.average = average
+        self.zero_division = zero_division
+
+    def __call__(self, y_true, y_pred):
+        y_true = y_true.cpu().detach().numpy()
+        y_pred = y_pred.cpu().detach().numpy()
+        skf1 = f1_score(y_true, y_pred, average=self.average,
+                        zero_division=self.zero_division)
+        return torch.tensor(skf1)
 
 
 class Params(object):
