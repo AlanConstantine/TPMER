@@ -160,17 +160,17 @@ class SignalEncoder(nn.Module):
         self.inception1 = InceptionTransformer(in_channel=1)
         self.inception2 = InceptionTransformer(in_channel=4)
         self.inception3 = InceptionTransformer(in_channel=16)
-        # self.inception4 = InceptionTransformer(in_channel=64)
+        self.inception4 = InceptionTransformer(in_channel=64)
 
         self.fcn = nn.Sequential(
             #  nn.Dropout(p=dropout),
-            nn.Linear(int(self.seq / (2**3)), self.output_size),)
+            nn.Linear(int(self.seq / (2**4)), self.output_size),)
 
     def forward(self, x):
         x = self.inception1(x)
         x = self.inception2(x)
         x = self.inception3(x)
-        # x = self.inception4(x)
+        x = self.inception4(x)
 
         x = torch.mean(x, 1)  # global average pooling
         output = self.fcn(x)
@@ -189,8 +189,6 @@ class MultiSignalEncoder(nn.Module):
         self.temp_encoder = SignalEncoder(self.output_size, dropout, self.seq)
         self.hr_encoder = SignalEncoder(self.output_size, dropout, self.seq)
 
-        self.stacker = InceptionTransformer(in_channel=4)
-
     def forward(self, x):
         bvp = x[:, 0, :].reshape(-1, 1, self.seq)
         eda = x[:, 1, :].reshape(-1, 1, self.seq)
@@ -206,12 +204,30 @@ class MultiSignalEncoder(nn.Module):
         outputs = [bvp_encoder, eda_encoder, temp_encoder, hr_encoder]
 
         encoder_outputs = torch.stack(outputs, 1)
-        stacker_output = self.stacker(encoder_outputs)
-
-        print('stacking output', stacker_output.shape)
         # output: [batch_size, feature, seq_len]
         # encoder_outputs = encoder_outputs.permute(0, 2, 1)
         return encoder_outputs
+
+
+class SignalDecoder(nn.Module):
+    def __init__(self, device, maskp) -> None:
+        super().__init__()
+        # self.maskp = maskp
+        self.device = device
+        self.decoder = TransformerDecoderLayer(
+            d_model=4, nhead=4, dropout=0.1, batch_first=True)
+
+    def forward(self, x, tgt):
+        # mask = (torch.rand((tgt.shape[0], 4, 400), device=self.device)
+        #         <= self.maskp).int()
+
+        # tgt = tgt * mask
+        tgt = tgt.permute(0, 2, 1)
+
+        decoder_outputs = self.decoder(tgt, x)
+        decoder_outputs = decoder_outputs.permute(0, 2, 1)
+
+        return decoder_outputs
 
 
 class ProjectionHead(nn.Module):
