@@ -92,6 +92,9 @@ class ResidualBlock(nn.Module):
         out = self.bn2(out)
         if out.shape[2] != identity.shape[2]:
             out = F.pad(input=out, pad=(0, identity.shape[2] - out.shape[2]))
+
+        # print(out.shape, identity.shape)
+        assert out.shape == identity.shape
         out += identity
         out = self.relu(out)
         return out
@@ -99,19 +102,22 @@ class ResidualBlock(nn.Module):
 
 class InceptionTransformer(nn.Module):
 
-    def __init__(self, in_channel, seq=400):
+    def __init__(self, in_channel, out_channel=None, seq=400):
         super().__init__()
 
         self.seq = seq
 
+        if not out_channel:
+            out_channel = in_channel
+
         self.branch1 = ResidualBlock(
-            in_channel, in_channel, kernel_size=1, stride=1)
+            in_channel, out_channel, kernel_size=1, stride=1)
 
         self.branch2 = ResidualBlock(
-            in_channel, in_channel, kernel_size=3, stride=1)
+            in_channel, out_channel, kernel_size=3, stride=1)
 
         self.branch3 = ResidualBlock(
-            in_channel, in_channel, kernel_size=5, stride=1)
+            in_channel, out_channel, kernel_size=5, stride=1)
 
         self.branch4 = nn.Sequential(nn.MaxPool1d(kernel_size=3, stride=1),
                                      nn.LeakyReLU())
@@ -189,7 +195,7 @@ class MultiSignalEncoder(nn.Module):
         self.temp_encoder = SignalEncoder(self.output_size, dropout, self.seq)
         self.hr_encoder = SignalEncoder(self.output_size, dropout, self.seq)
 
-        self.stacker = InceptionTransformer(in_channel=4)
+        self.stacker = BasicTransformer(in_channel=10)
 
     def forward(self, x):
         bvp = x[:, 0, :].reshape(-1, 1, self.seq)
@@ -208,10 +214,9 @@ class MultiSignalEncoder(nn.Module):
         encoder_outputs = torch.stack(outputs, 1)
         stacker_output = self.stacker(encoder_outputs)
 
-        print('stacking output', stacker_output.shape)
         # output: [batch_size, feature, seq_len]
         # encoder_outputs = encoder_outputs.permute(0, 2, 1)
-        return encoder_outputs
+        return stacker_output
 
 
 class ProjectionHead(nn.Module):
@@ -227,15 +232,6 @@ class ProjectionHead(nn.Module):
         # third hidden layer and output
         self.hidden3 = nn.Linear(256, seq)
         xavier_uniform_(self.hidden3.weight)
-        # self.fcn = nn.Sequential(
-        #     nn.Linear(encoder_output, 128),
-        #     nn.LeakyReLU(),
-        #     nn.Dropout(p=0.2),
-        #     nn.Linear(128, 256),
-        #     nn.LeakyReLU(),
-        #     nn.Linear(256, seq)
-        # )
-        # kaiming_uniform_(self.fcn.weight, nonlinearity='relu')
 
     def forward(self, x):
         # input to first hidden layer
@@ -266,15 +262,6 @@ class MultiSignalRepresentation(nn.Module):
 
         self.output_layer = ProjectionHead(
             encoder_output=self.output_size, seq=self.seq)
-
-        # self.fcn = nn.Sequential(
-        #     nn.Linear(output_size, 128),
-        #     nn.LeakyReLU(),
-        #     nn.Dropout(p=0.2),
-        #     nn.Linear(128, 32),
-        #     nn.LeakyReLU(),
-        #     nn.Linear(32, 2)
-        # )
 
     def waveform_masking(self, batch_size, channels, seq_len):
         noise_factor = 0.05
@@ -323,37 +310,3 @@ class MultiSignalRepresentation(nn.Module):
         output = self.output_layer(encoder_outputs)
 
         return output
-
-        # encoder_outputs = self.encoder(x)
-        # output = self.fcn(encoder_outputs)
-        # return output
-
-
-# class MultiSignalRepresentation(nn.Module):
-
-#     def __init__(self, output_size, dropout=0.1, seq=400, maskp=0.8, device=torch.device("cpu")):
-#         super().__init__()
-
-#         self.seq = seq
-#         self.output_size = output_size
-#         self.maskp = maskp
-#         self.device = device
-
-#         self.encoder = MultiEncoder(output_size=self.output_size, seq=self.seq)
-
-#         self.decoder = TransformerDecoderLayer(
-#             d_model=4, nhead=4, dropout=0.1, batch_first=True)
-
-#     def forward(self, x, tgt):
-#         encoder_outputs = self.encoder(x)
-#         mask = (torch.rand((tgt.shape[0], 4, 400), device=self.device)
-#                 <= self.maskp).int()
-
-#         tgt = tgt * mask
-#         tgt = tgt.permute(0, 2, 1)
-
-#         decoder_outputs = self.decoder(tgt, encoder_outputs)
-
-#         decoder_outputs = decoder_outputs.permute(0, 2, 1)
-
-#         return decoder_outputs
